@@ -4,6 +4,7 @@
 #include <cmath>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_ttf.h>
+#include <allegro5/allegro_image.h>
 #define NO_COLLISION -1
 #define COL_LEFT 0
 #define COL_RIGHT 1
@@ -69,6 +70,10 @@ void init(void){
 	abort_game("Failed to initalize Allegro");
 	}
 
+	if( !al_init_image_addon() ){
+	abort_game("Failed to initialize image addon");
+	}	
+
 	if( !al_install_keyboard() ){
 	abort_game("Failed to install keyboard");
 	}
@@ -84,8 +89,10 @@ void init(void){
 		abort_game("Failed to create display");
 	}
 	
-	sprite = al_create_bitmap(SPRITE_WIDTH, SPRITE_HEIGHT);
-	sprite2 = al_create_bitmap(SPRITE_WIDTH, SPRITE_HEIGHT);
+	//sprite = al_create_bitmap(SPRITE_WIDTH, SPRITE_HEIGHT);
+	sprite = al_load_bitmap("images/red.bmp");
+	sprite2 = al_load_bitmap("images/green.bmp");
+//	sprite2 = al_create_bitmap(SPRITE_WIDTH, SPRITE_HEIGHT);
 	lifesprite = al_create_bitmap(SPRITE_WIDTH/4,SPRITE_HEIGHT/4);
 	ball = al_create_bitmap(BALL_WIDTH,BALL_HEIGHT);
 	
@@ -104,12 +111,10 @@ void init(void){
 	al_set_target_bitmap(ball);
 	al_clear_to_color(al_map_rgb(0,0,250));
 
-	al_set_target_bitmap(sprite);
-	al_clear_to_color(al_map_rgb(255,0,0));
 	al_set_target_bitmap(lifesprite);
 	al_clear_to_color(al_map_rgb(255,0,0));
-	al_set_target_bitmap(sprite2);
-	al_clear_to_color(al_map_rgb(237,149,40));
+//	al_set_target_bitmap(sprite2);
+//	al_clear_to_color(al_map_rgb(237,149,40));
 	al_set_target_bitmap(al_get_backbuffer(display));
 
 
@@ -146,7 +151,7 @@ void game_loop(void){
 
 bool redraw = true;
 al_start_timer(timer);
-ALLEGRO_FONT *smallfont = al_load_ttf_font("trebuc.ttf",20,0);
+ALLEGRO_FONT *smallfont = al_load_ttf_font("fonts/trebuc.ttf",20,0);
 int points = 0;
 int numLives = 2;
 lostGame = false;
@@ -243,6 +248,8 @@ while( !done ){
 	if(redraw && al_is_event_queue_empty(event_queue)){
 		redraw = false;
 		al_clear_to_color(al_map_rgb(0,0,0));
+		al_convert_mask_to_alpha(sprite,al_map_rgb(255,255,255));
+		al_convert_mask_to_alpha(sprite2,al_map_rgb(255,255,255));
 		al_draw_bitmap(sprite,sprite_x,sprite_y,0);
 		al_draw_bitmap(sprite2,sprite2_x,sprite2_y,0);
 		al_draw_bitmap(ball,ball_x,ball_y,0);
@@ -265,8 +272,8 @@ void splash_loop(void){
 bool redraw = true;
 al_start_timer(timer);
 bool splash_done;	
-ALLEGRO_FONT *bigfont = al_load_ttf_font("trebuc.ttf",60,0);
-ALLEGRO_FONT *smallfont = al_load_ttf_font("trebuc.ttf",40,0);
+ALLEGRO_FONT *bigfont = al_load_ttf_font("fonts/trebuc.ttf",60,0);
+ALLEGRO_FONT *smallfont = al_load_ttf_font("fonts/trebuc.ttf",40,0);
 
 
 while( !splash_done){
@@ -312,8 +319,8 @@ void gameover_loop(void){
 bool redraw = true;
 al_start_timer(timer);
 bool gameover_done = false;	
-ALLEGRO_FONT *bigfont = al_load_ttf_font("trebuc.ttf",60,0);
-ALLEGRO_FONT *smallfont = al_load_ttf_font("trebuc.ttf",40,0);
+ALLEGRO_FONT *bigfont = al_load_ttf_font("fonts/trebuc.ttf",60,0);
+ALLEGRO_FONT *smallfont = al_load_ttf_font("fonts/trebuc.ttf",40,0);
 
 
 while( !gameover_done){
