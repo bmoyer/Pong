@@ -9,14 +9,14 @@
 #define COL_RIGHT 1
 #define COL_UP 2
 #define COL_DOWN 3
-#define COMPUTER_SPEED 3
+#define COMPUTER_SPEED 5
 const int SCREEN_W = 640; //default 640
 const int SCREEN_H = 480;
 const int SPRITE_HEIGHT = 80; //default 80
 const int SPRITE_WIDTH = 16;  //default 16
 const int BALL_HEIGHT = 20;
 const int BALL_WIDTH = 20;
-const float BALL_SPEED = 3;
+float BALL_SPEED = 3.0;
 int speed = 5;
 int numLives;
 bool done, lostGame;
@@ -58,7 +58,7 @@ void reset_object_positions(){
 sprite_x = 0; sprite_y = SCREEN_H/2.0-SPRITE_HEIGHT/2.0;
 sprite_dx = -4.0; sprite_dy = 4.0;
 ball_x = 150; ball_y = 150;
-ball_dx = -3.0; ball_dy = 3.0;
+ball_dx = -1.0; ball_dy = 1.0;
 sprite2_y = SCREEN_H/2.0 - SPRITE_HEIGHT/2.0; sprite2_x = SCREEN_W - SPRITE_WIDTH;
 sprite2_dx = COMPUTER_SPEED; sprite2_dy = COMPUTER_SPEED;
 }
@@ -166,8 +166,8 @@ while( !done ){
 		if(key[KEY_DOWN] && sprite_y < SCREEN_H - SPRITE_HEIGHT){
 			sprite_y = sprite_y + speed;
 		}
-		ball_x += ball_dx;
-		ball_y += ball_dy;
+		ball_x += ball_dx*BALL_SPEED;
+		ball_y += ball_dy*BALL_SPEED;
 		
 		
 
@@ -211,13 +211,14 @@ while( !done ){
 	}
 		
 	//hitting walls: RIGHT, BOTTOM, TOP, LEFT
-	if( (ball_x + BALL_WIDTH) > SCREEN_W && ball_dx > 0 ) { points++; ball_dx = -1*ball_dx; ball_dy = 1*ball_dy; }
-	if( (ball_y + BALL_HEIGHT) > SCREEN_H && ball_dy > 0 ) { ball_dx = 1*ball_dx; ball_dy = -1*ball_dy; }
-	if( (ball_y <=0 && ball_dy < 0)) { ball_dx = 1*ball_dx; ball_dy = -1*ball_dy; }
+	if( (ball_x + BALL_WIDTH) > SCREEN_W && ball_dx > 0 ) { points+=2; ball_dx = -1*ball_dx; ball_dy = 1*ball_dy; BALL_SPEED-=.5; }
+	if( (ball_y + BALL_HEIGHT) > SCREEN_H && ball_dy > 0 ) { ball_dx = 1*ball_dx; ball_dy = -1*ball_dy;BALL_SPEED-=.5; }
+	if( (ball_y <=0 && ball_dy < 0)) { ball_dx = 1*ball_dx; ball_dy = -1*ball_dy; BALL_SPEED -=.5; }
 	if( (ball_x <=0 && ball_dx < 0 )) {
 	 ball_dx = abs(ball_dx);
 	 ball_dy = 1*ball_dy; 
 	numLives--;
+	BALL_SPEED-=.5;
 	if(numLives<=0) { lostGame = true; done = true; }
 	}
 
@@ -227,6 +228,7 @@ while( !done ){
 	{
 	ball_dx = abs(ball_dx);
 	points++;
+	BALL_SPEED+= 1;
 	}
 	
 	//computer paddle collision
@@ -235,6 +237,7 @@ while( !done ){
 	{
 	ball_dx = -1*abs(ball_dx);
 	//points++;
+	BALL_SPEED+= 1;
 	}
 	//redraw everything we've updated
 	if(redraw && al_is_event_queue_empty(event_queue)){
