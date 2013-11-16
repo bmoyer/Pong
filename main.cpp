@@ -1,16 +1,20 @@
 #include <allegro5/allegro5.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <cmath>
+#include <string>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_ttf.h>
 #include <allegro5/allegro_image.h>
+#include "collision.cpp"
 #define NO_COLLISION -1
 #define COL_LEFT 0
 #define COL_RIGHT 1
 #define COL_UP 2
 #define COL_DOWN 3
 #define COMPUTER_SPEED 5
+
 const int SCREEN_W = 640; //default 640
 const int SCREEN_H = 480;
 const int SPRITE_HEIGHT = 80; //default 80
@@ -30,17 +34,6 @@ ALLEGRO_DISPLAY *display;
 ALLEGRO_BITMAP *sprite = NULL, *sprite2 = NULL, *ball = NULL;
 ALLEGRO_BITMAP *lifesprite;
 bool key[4] = { false, false, false, false };
-int bounding_box_collision(int b1_x, int b1_y, int b1_w, int b1_h, int b2_x, int b2_y, int b2_w, int b2_h)
-{
-    if ((b1_x > b2_x + b2_w - 1 ) || // is b1 on the right side of b2?
-        (b1_y > b2_y + b2_h - 1) || // is b1 under b2?
-        (b2_x > b1_x + b1_w  -1) || // is b2 on the right side of b1?
-        (b2_y > b1_y + b1_h - 1))   // is b2 under b1?
-    {
-        return 0;
-    }
-    return 1;
-}
 
 //setting up sprite coordinates
 float sprite_x = 0, ball_x = 150;
@@ -89,13 +82,11 @@ void init(void){
 		abort_game("Failed to create display");
 	}
 	
-	//sprite = al_create_bitmap(SPRITE_WIDTH, SPRITE_HEIGHT);
 	sprite = al_load_bitmap("images/red.bmp");
 	sprite2 = al_load_bitmap("images/green.bmp");
-//	sprite2 = al_create_bitmap(SPRITE_WIDTH, SPRITE_HEIGHT);
 	lifesprite = al_create_bitmap(SPRITE_WIDTH/4,SPRITE_HEIGHT/4);
-	ball = al_create_bitmap(BALL_WIDTH,BALL_HEIGHT);
-	
+	ball = al_load_bitmap("images/ball.bmp");
+
 	if(!sprite || !sprite2 || !lifesprite){
 	al_destroy_display(display);
 	al_destroy_timer(timer);
@@ -108,13 +99,9 @@ void init(void){
 	abort_game("Failed to create ball");
 	}
 	
-	al_set_target_bitmap(ball);
-	al_clear_to_color(al_map_rgb(0,0,250));
 
 	al_set_target_bitmap(lifesprite);
 	al_clear_to_color(al_map_rgb(255,0,0));
-//	al_set_target_bitmap(sprite2);
-//	al_clear_to_color(al_map_rgb(237,149,40));
 	al_set_target_bitmap(al_get_backbuffer(display));
 
 
@@ -133,9 +120,7 @@ void init(void){
 
 	done = false;
 }
-
 void shutdown(void){
-
 	if(timer){
 		al_destroy_timer(timer);
 	}
@@ -157,6 +142,10 @@ int numLives = 2;
 lostGame = false;
 done = false;
 reset_object_positions();
+
+al_convert_mask_to_alpha(sprite,al_map_rgb(255,255,255));
+al_convert_mask_to_alpha(sprite2,al_map_rgb(255,255,255));
+al_convert_mask_to_alpha(ball,al_map_rgb(255,255,255));
 
 while( !done ){
 
@@ -248,8 +237,6 @@ while( !done ){
 	if(redraw && al_is_event_queue_empty(event_queue)){
 		redraw = false;
 		al_clear_to_color(al_map_rgb(0,0,0));
-		al_convert_mask_to_alpha(sprite,al_map_rgb(255,255,255));
-		al_convert_mask_to_alpha(sprite2,al_map_rgb(255,255,255));
 		al_draw_bitmap(sprite,sprite_x,sprite_y,0);
 		al_draw_bitmap(sprite2,sprite2_x,sprite2_y,0);
 		al_draw_bitmap(ball,ball_x,ball_y,0);
@@ -275,6 +262,9 @@ bool splash_done;
 ALLEGRO_FONT *bigfont = al_load_ttf_font("fonts/trebuc.ttf",60,0);
 ALLEGRO_FONT *smallfont = al_load_ttf_font("fonts/trebuc.ttf",40,0);
 
+al_convert_mask_to_alpha(sprite,al_map_rgb(255,255,255));
+
+int testAngle;
 
 while( !splash_done){
 
@@ -282,6 +272,7 @@ ALLEGRO_EVENT event;
 al_wait_for_event(event_queue, &event);
 
 	if(event.type == ALLEGRO_EVENT_TIMER){
+		testAngle += 1;
 		redraw = true;
 	}
 	
@@ -305,8 +296,8 @@ al_wait_for_event(event_queue, &event);
 		   al_clear_to_color(al_map_rgb(0,0,0));
 		   al_draw_text(bigfont, al_map_rgb(255,0,0), SCREEN_W/2, SCREEN_H/4,ALLEGRO_ALIGN_CENTRE, "Press S to start.");
 		   al_draw_text(smallfont, al_map_rgb(255,0,0), SCREEN_W/2,20,ALLEGRO_ALIGN_CENTRE, "AllegroPong");
-		
-		al_flip_display();
+		   //rotate_sprite(display,sprite,120,120,testAngle);
+		   al_flip_display();
 	
 	}
 
@@ -372,8 +363,6 @@ int main(int argc, char* argv[])
 init();
 splash_loop();
 game_loop();
-
 while(lostGame){ gameover_loop(); }
-
 shutdown();
 }
