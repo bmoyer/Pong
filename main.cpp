@@ -44,15 +44,12 @@ float sprite_dx = -4.0, sprite_dy = 4.0, ball_dx = -3.0, ball_dy = 3.0;
 float sprite2_y = SCREEN_H/2.0 - SPRITE_HEIGHT / 2.0, sprite2_x = SCREEN_W - SPRITE_WIDTH;
 float sprite2_dx = COMPUTER_SPEED, sprite2_dy = COMPUTER_SPEED;
 
+Ball *b1;
+
 void abort_game(const char *message){
 	printf("%s\n", message);
 	exit(1);
 }
-
-class Ball;
-Ball *b1;
-b1->x = 5;
-
 
 void reset_object_positions(){
 sprite_x = 0; sprite_y = SCREEN_H/2.0-SPRITE_HEIGHT/2.0;
@@ -61,10 +58,13 @@ ball_x = 150; ball_y = 150;
 ball_dx = -1.0; ball_dy = 1.0;
 sprite2_y = SCREEN_H/2.0 - SPRITE_HEIGHT/2.0; sprite2_x = SCREEN_W - SPRITE_WIDTH;
 sprite2_dx = COMPUTER_SPEED; sprite2_dy = COMPUTER_SPEED;
+
+
 }
 
 void init(void){
-
+	b1 = new  Ball();
+	
 	if( !al_init() ){
 	abort_game("Failed to initalize Allegro");
 	}
@@ -152,6 +152,8 @@ reset_object_positions();
 al_convert_mask_to_alpha(sprite,al_map_rgb(255,255,255));
 al_convert_mask_to_alpha(sprite2,al_map_rgb(255,255,255));
 al_convert_mask_to_alpha(ball,al_map_rgb(255,255,255));
+
+printf("b1->x == %f",b1->x);
 
 while( !done ){
 

@@ -11,8 +11,21 @@ public:
 	float dx, dy;
 	float speed;
 	Ball();
+	~Ball();
 };
 
 Ball::Ball(){
-x = 1;
+
+speed = 3.0;
+x = 150.0, y = 150.0;
+dx = -3.0, dy = 3.0;
+
 }
+
+Ball::~Ball(){
+
+
+}
+
+
+
