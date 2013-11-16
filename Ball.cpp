@@ -1,16 +1,18 @@
-#include <allegro5/allegro5.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
-#include <cmath>
-#include <string>
-#include <allegro5/allegro_font.h>
-#include <allegro5/allegro_ttf.h>
-#include <allegro5/allegro_image.h>
-
+#include <float.h>
 class Ball{
-	float ball_x, ball_y;
-	float ball_dx, ball_dy;
+
+public:
+	int width, height;
+
+	float x, y;
+	float dx, dy;
+	float speed;
+	Ball();
 };
 
-
+Ball::Ball(){
+x = 1;
+}

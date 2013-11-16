@@ -8,6 +8,7 @@
 #include <allegro5/allegro_ttf.h>
 #include <allegro5/allegro_image.h>
 #include "collision.cpp"
+#include "Ball.cpp"
 #define NO_COLLISION -1
 #define COL_LEFT 0
 #define COL_RIGHT 1
@@ -47,6 +48,11 @@ void abort_game(const char *message){
 	printf("%s\n", message);
 	exit(1);
 }
+
+class Ball;
+Ball *b1;
+b1->x = 5;
+
 
 void reset_object_positions(){
 sprite_x = 0; sprite_y = SCREEN_H/2.0-SPRITE_HEIGHT/2.0;
