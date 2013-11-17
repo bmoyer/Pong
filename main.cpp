@@ -19,12 +19,12 @@
 
 const int SCREEN_W = 640; //default 640
 const int SCREEN_H = 480;
-const int SPRITE_HEIGHT = 80; //default 80
+const int SPRITE_HEIGHT =80; //default.950
 const int SPRITE_WIDTH = 16;  //default 16
 const int BALL_HEIGHT = 20;
 const int BALL_WIDTH = 20;
 float BALL_SPEED = 3.0;
-int speed = 5;
+int speed = 7;
 int numLives;
 bool done, lostGame;
 enum MYKEYS {
@@ -51,33 +51,33 @@ void abort_game(const char *message){
 }
 
 void reset_object_positions(){
-sprite_x = 0; sprite_y = SCREEN_H/2.0-SPRITE_HEIGHT/2.0;
-sprite_dx = -4.0; sprite_dy = 4.0;
-sprite2_y = SCREEN_H/2.0 - SPRITE_HEIGHT/2.0; sprite2_x = SCREEN_W - SPRITE_WIDTH;
-sprite2_dx = COMPUTER_SPEED; sprite2_dy = COMPUTER_SPEED;
+	sprite_x = 0; sprite_y = SCREEN_H/2.0-SPRITE_HEIGHT/2.0;
+	sprite_dx = -4.0; sprite_dy = 4.0;
+	sprite2_y = SCREEN_H/2.0 - SPRITE_HEIGHT/2.0; sprite2_x = SCREEN_W - SPRITE_WIDTH;
+	sprite2_dx = COMPUTER_SPEED; sprite2_dy = COMPUTER_SPEED;
 
 
 }
 
 void init(void){
-	//adding one ball to vector
+
 	balls.push_back(Ball());
 
 	if( !al_init() ){
-	abort_game("Failed to initalize Allegro");
+		abort_game("Failed to initalize Allegro");
 	}
 
 	if( !al_init_image_addon() ){
-	abort_game("Failed to initialize image addon");
+		abort_game("Failed to initialize image addon");
 	}	
 
 	if( !al_install_keyboard() ){
-	abort_game("Failed to install keyboard");
+		abort_game("Failed to install keyboard");
 	}
-	
+
 	timer = al_create_timer(1.0 / 60);
 	if( !timer ){
-	abort_game("Failed to create timer");
+		abort_game("Failed to create timer");
 	}
 
 	al_set_new_display_flags(ALLEGRO_WINDOWED);
@@ -85,33 +85,31 @@ void init(void){
 	if( !display ){
 		abort_game("Failed to create display");
 	}
-	
+
 	sprite = al_load_bitmap("images/red.bmp");
 	sprite2 = al_load_bitmap("images/green.bmp");
 	lifesprite = al_create_bitmap(SPRITE_WIDTH/4,SPRITE_HEIGHT/4);
 	ball = al_load_bitmap("images/ball.bmp");
 
 	if(!sprite || !sprite2 || !lifesprite){
-	al_destroy_display(display);
-	al_destroy_timer(timer);
-	abort_game("Failed to create sprite");
+		al_destroy_display(display);
+		al_destroy_timer(timer);
+		abort_game("Failed to create sprite");
 	}
-	
+
 	if(!ball){
-	al_destroy_display(display);
-	al_destroy_timer(timer);
-	abort_game("Failed to create ball");
+		al_destroy_display(display);
+		al_destroy_timer(timer);
+		abort_game("Failed to create ball");
 	}
-	
 
 	al_set_target_bitmap(lifesprite);
 	al_clear_to_color(al_map_rgb(255,0,0));
 	al_set_target_bitmap(al_get_backbuffer(display));
 
-
 	event_queue = al_create_event_queue();
 	if( !event_queue ){
-	abort_game("Failed to create event queue");
+		abort_game("Failed to create event queue");
 	}
 
 	al_register_event_source(event_queue, al_get_keyboard_event_source());
@@ -124,6 +122,7 @@ void init(void){
 
 	done = false;
 }
+
 void shutdown(void){
 	if(timer){
 		al_destroy_timer(timer);
@@ -138,256 +137,258 @@ void shutdown(void){
 
 void game_loop(void){
 
-bool redraw = true;
-al_start_timer(timer);
-ALLEGRO_FONT *smallfont = al_load_ttf_font("fonts/trebuc.ttf",20,0);
-int points = 0;
-int numLives = 15;
-lostGame = false;
-done = false;
-reset_object_positions();
+	bool redraw = true;
+	al_start_timer(timer);
+	ALLEGRO_FONT *smallfont = al_load_ttf_font("fonts/trebuc.ttf",20,0);
+	int points = 0;
+	int numLives = 1000;
+	lostGame = false;
+	done = false;
+	reset_object_positions();
 
-al_convert_mask_to_alpha(sprite,al_map_rgb(255,255,255));
-al_convert_mask_to_alpha(sprite2,al_map_rgb(255,255,255));
-al_convert_mask_to_alpha(ball,al_map_rgb(255,255,255));
+	al_convert_mask_to_alpha(sprite,al_map_rgb(255,255,255));
+	al_convert_mask_to_alpha(sprite2,al_map_rgb(255,255,255));
+	al_convert_mask_to_alpha(ball,al_map_rgb(255,255,255));
 
-while( !done ){
+	while( !done ){
 
-	ALLEGRO_EVENT event;
-	al_wait_for_event(event_queue, &event);
-	
-	
-	if(event.type == ALLEGRO_EVENT_TIMER){
-		if(key[KEY_UP] && sprite_y > 0){
-			sprite_y = sprite_y - speed;
+		ALLEGRO_EVENT event;
+		al_wait_for_event(event_queue, &event);
+
+
+		if(event.type == ALLEGRO_EVENT_TIMER){
+			if(key[KEY_UP] && sprite_y > 0){
+				sprite_y = sprite_y - speed;
+			}
+			if(key[KEY_DOWN] && sprite_y < SCREEN_H - SPRITE_HEIGHT){
+				sprite_y = sprite_y + speed;
+			}
+
+			for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
+				it->Move();
+			}		
+
+
+			if( sprite2_y+sprite2_dy > 0 && sprite2_y+SPRITE_HEIGHT+sprite2_dy < SCREEN_H){
+				sprite2_y += sprite2_dy;
+			}
+
+
+			for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
+
+				if( sprite2_y+(SPRITE_HEIGHT/2) < it->y+(BALL_HEIGHT/2)) { sprite2_dy = abs(sprite2_dy); }
+				if( sprite2_y+(SPRITE_HEIGHT/2) > it->y+(BALL_HEIGHT/2)) { sprite2_dy = -1*abs(sprite2_dy); }
+
+			}		
+			if( (balls.size() * balls.size() * 10) < points){
+				balls.push_back(Ball());
+			}	
+			redraw = true;
 		}
-		if(key[KEY_DOWN] && sprite_y < SCREEN_H - SPRITE_HEIGHT){
-			sprite_y = sprite_y + speed;
+
+		else if(event.type == ALLEGRO_EVENT_DISPLAY_CLOSE){
+			break;
 		}
-		
+
+		else if(event.type == ALLEGRO_EVENT_KEY_DOWN){
+			switch(event.keyboard.keycode){
+				case ALLEGRO_KEY_UP:
+					key[KEY_UP] = true;
+					break;
+				case ALLEGRO_KEY_DOWN:
+					key[KEY_DOWN] = true;
+					break;
+			}
+
+		}
+		else if(event.type == ALLEGRO_EVENT_KEY_UP){
+			switch(event.keyboard.keycode){
+				case ALLEGRO_KEY_UP:
+					key[KEY_UP] = false;
+					break;
+				case ALLEGRO_KEY_DOWN:
+					key[KEY_DOWN] = false;
+					break;
+				case ALLEGRO_KEY_ESCAPE:
+					done = true;
+					break;
+			}
+		}
+
+		//hitting walls: RIGHT, BOTTOM, TOP, LEFT
 		for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
-		it->Move();
+
+			if( (it->x + BALL_WIDTH) > SCREEN_W && it->dx > 0 ) { points+=2; it->dx = -1*it->dx; it->dy = 1*it->dy; it->speed = it->speed*0.95; }
+			if( (it->y + BALL_HEIGHT) > SCREEN_H && it->dy > 0 ) { it->dx = 1*it->dx; it->dy = -1*it->dy; it->speed =it->speed*0.95; }
+			if( (it->y <=0 && it->dy < 0)) { it->dx = 1*it->dx; it->dy = -1*it->dy; it->speed = it->speed*0.95; }
+			if( (it->x <=0 && it->dx < 0 )) {
+				it->dx = abs(it->dx);
+				it->dy = 1*it->dy; 
+				numLives--;
+				it->speed= it->speed*0.95;
+				if(numLives<=0) { lostGame = true; done = true; }
+			}
+
 		}		
 
-	
-		if( sprite2_y+sprite2_dy > 0 && sprite2_y+SPRITE_HEIGHT+sprite2_dy < SCREEN_H){
-		sprite2_y += sprite2_dy;
-		}
-		
-		
+		//player paddle collision
 		for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
-		
-		if( sprite2_y+(SPRITE_HEIGHT/2) < it->y+(BALL_HEIGHT/2)) { sprite2_dy = abs(sprite2_dy); }
-		if( sprite2_y+(SPRITE_HEIGHT/2) > it->y+(BALL_HEIGHT/2)) { sprite2_dy = -1*abs(sprite2_dy); }
-		
-		}		
-		
-		redraw = true;
-	}
-	
-	else if(event.type == ALLEGRO_EVENT_DISPLAY_CLOSE){
-	break;
-	}
-	
-	else if(event.type == ALLEGRO_EVENT_KEY_DOWN){
-		switch(event.keyboard.keycode){
-			case ALLEGRO_KEY_UP:
-				key[KEY_UP] = true;
-				break;
-			case ALLEGRO_KEY_DOWN:
-				key[KEY_DOWN] = true;
-				break;
+
+			if(bounding_box_collision(sprite_x,sprite_y,SPRITE_WIDTH,SPRITE_HEIGHT,
+						it->x, it->y, BALL_WIDTH, BALL_HEIGHT))
+			{
+				it->dx = abs(it->dx);
+				points++;
+				it->speed = it-> speed+ 1.0;
+			}
+
+
+		}	
+		//computer paddle collision
+		for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
+
+			if(bounding_box_collision(sprite2_x,sprite2_y,SPRITE_WIDTH,SPRITE_HEIGHT,
+						it->x, it->y, BALL_WIDTH, BALL_HEIGHT))
+			{
+				it->dx = -1*abs(it->dx);
+				//points++;
+				it->speed = it->speed+ 1.0;
+			}
+
+
+		}	
+
+		//redraw everything we've updated
+		if(redraw && al_is_event_queue_empty(event_queue)){
+			redraw = false;
+			al_clear_to_color(al_map_rgb(0,0,0));
+			al_draw_bitmap(sprite,sprite_x,sprite_y,0);
+			al_draw_bitmap(sprite2,sprite2_x,sprite2_y,0);
+
+			for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){	
+				al_draw_bitmap(ball,it->x,it->y,0);
+			}
+
+			al_draw_bitmap(lifesprite,20,20,0);
+			al_draw_textf(smallfont, al_map_rgb(255,255,255), SCREEN_W/2,20,ALLEGRO_ALIGN_CENTRE, "Points: %d",points);
+			al_draw_textf(smallfont, al_map_rgb(255,255,255), 43,20,ALLEGRO_ALIGN_CENTRE, "x%d",numLives);
+			al_flip_display();
 		}
 
-		}
-	else if(event.type == ALLEGRO_EVENT_KEY_UP){
-		switch(event.keyboard.keycode){
-			case ALLEGRO_KEY_UP:
-				key[KEY_UP] = false;
-				break;
-			case ALLEGRO_KEY_DOWN:
-				key[KEY_DOWN] = false;
-				break;
-			case ALLEGRO_KEY_ESCAPE:
-				done = true;
-				break;
-		}
 	}
-		
-	//hitting walls: RIGHT, BOTTOM, TOP, LEFT
-	for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
-	
-	if( (it->x + BALL_WIDTH) > SCREEN_W && it->dx > 0 ) { points+=2; it->dx = -1*it->dx; it->dy = 1*it->dy; it->speed = it->speed -.5; }
-	if( (it->y + BALL_HEIGHT) > SCREEN_H && it->dy > 0 ) { it->dx = 1*it->dx; it->dy = -1*it->dy; it->speed =it->speed-.5; }
-	if( (it->y <=0 && it->dy < 0)) { it->dx = 1*it->dx; it->dy = -1*it->dy; it->speed = it->speed -.5; }
-	if( (it->x <=0 && it->dx < 0 )) {
-	 it->dx = abs(it->dx);
-	 it->dy = 1*it->dy; 
-	numLives--;
-	it->speed= it->speed - .5;
-	if(numLives<=0) { lostGame = true; done = true; }
-	}
-	
-	}		
-	
-	//player paddle collision
-	for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
-	
-	if(bounding_box_collision(sprite_x,sprite_y,SPRITE_WIDTH,SPRITE_HEIGHT,
-		it->x, it->y, BALL_WIDTH, BALL_HEIGHT))
-	{
-	it->dx = abs(it->dx);
-	points++;
-	it->speed = it-> speed+ 1.0;
-	}
-	
-
-	}	
-	//computer paddle collision
-	for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
-	
-	if(bounding_box_collision(sprite2_x,sprite2_y,SPRITE_WIDTH,SPRITE_HEIGHT,
-		it->x, it->y, BALL_WIDTH, BALL_HEIGHT))
-	{
-	it->dx = -1*abs(it->dx);
-	//points++;
-	it->speed = it->speed+ 1.0;
-	}
-
-
-	}	
-
-	//redraw everything we've updated
-	if(redraw && al_is_event_queue_empty(event_queue)){
-		redraw = false;
-		al_clear_to_color(al_map_rgb(0,0,0));
-		al_draw_bitmap(sprite,sprite_x,sprite_y,0);
-		al_draw_bitmap(sprite2,sprite2_x,sprite2_y,0);
-	
-		for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){	
-		al_draw_bitmap(ball,it->x,it->y,0);
-		}
-		
-		al_draw_bitmap(lifesprite,20,20,0);
-		al_draw_textf(smallfont, al_map_rgb(255,255,255), SCREEN_W/2,20,ALLEGRO_ALIGN_CENTRE, "Points: %d",points);
-		al_draw_textf(smallfont, al_map_rgb(255,255,255), 43,20,ALLEGRO_ALIGN_CENTRE, "x%d",numLives);
-		al_flip_display();
-	}
-
-}
-//test:
-lostGame = true;
-al_stop_timer(timer);
+	//test:
+	lostGame = true;
+	al_stop_timer(timer);
 }
 
 
 
 void splash_loop(void){
 
-bool redraw = true;
-al_start_timer(timer);
-bool splash_done;	
-ALLEGRO_FONT *bigfont = al_load_ttf_font("fonts/trebuc.ttf",60,0);
-ALLEGRO_FONT *smallfont = al_load_ttf_font("fonts/trebuc.ttf",40,0);
+	bool redraw = true;
+	al_start_timer(timer);
+	bool splash_done;	
+	ALLEGRO_FONT *bigfont = al_load_ttf_font("fonts/trebuc.ttf",60,0);
+	ALLEGRO_FONT *smallfont = al_load_ttf_font("fonts/trebuc.ttf",40,0);
 
-al_convert_mask_to_alpha(sprite,al_map_rgb(255,255,255));
+	al_convert_mask_to_alpha(sprite,al_map_rgb(255,255,255));
 
-int testAngle;
+	int testAngle;
 
-while( !splash_done){
+	while( !splash_done){
 
-ALLEGRO_EVENT event;
-al_wait_for_event(event_queue, &event);
+		ALLEGRO_EVENT event;
+		al_wait_for_event(event_queue, &event);
 
-	if(event.type == ALLEGRO_EVENT_TIMER){
-		testAngle += 1;
-		redraw = true;
-	}
-	
-	else if(event.type == ALLEGRO_EVENT_DISPLAY_CLOSE){
-	break;
-	}
-
-	else if(event.type == ALLEGRO_EVENT_KEY_DOWN){
-		if(event.keyboard.keycode == ALLEGRO_KEY_S){
-			splash_done = true;
-			}
-		
-		if(event.keyboard.keycode == ALLEGRO_KEY_ESCAPE){
-			abort_game("killed at splash screen");
+		if(event.type == ALLEGRO_EVENT_TIMER){
+			testAngle += 1;
+			redraw = true;
 		}
-	
-	}
-	if(redraw && al_is_event_queue_empty(event_queue)){
-		redraw = false;
-		al_clear_to_color(al_map_rgb(0,200,0));
-		   al_clear_to_color(al_map_rgb(0,0,0));
-		   al_draw_text(bigfont, al_map_rgb(255,0,0), SCREEN_W/2, SCREEN_H/4,ALLEGRO_ALIGN_CENTRE, "Press S to start.");
-		   al_draw_text(smallfont, al_map_rgb(255,0,0), SCREEN_W/2,20,ALLEGRO_ALIGN_CENTRE, "AllegroPong");
-		   al_flip_display();
-	
-	}
 
-al_stop_timer(timer);
-}
+		else if(event.type == ALLEGRO_EVENT_DISPLAY_CLOSE){
+			break;
+		}
+
+		else if(event.type == ALLEGRO_EVENT_KEY_DOWN){
+			if(event.keyboard.keycode == ALLEGRO_KEY_S){
+				splash_done = true;
+			}
+
+			if(event.keyboard.keycode == ALLEGRO_KEY_ESCAPE){
+				abort_game("killed at splash screen");
+			}
+
+		}
+		if(redraw && al_is_event_queue_empty(event_queue)){
+			redraw = false;
+			al_clear_to_color(al_map_rgb(0,200,0));
+			al_clear_to_color(al_map_rgb(0,0,0));
+			al_draw_text(bigfont, al_map_rgb(255,0,0), SCREEN_W/2, SCREEN_H/4,ALLEGRO_ALIGN_CENTRE, "Press S to start.");
+			al_draw_text(smallfont, al_map_rgb(255,0,0), SCREEN_W/2,20,ALLEGRO_ALIGN_CENTRE, "AllegroPong");
+			al_flip_display();
+
+		}
+
+		al_stop_timer(timer);
+	}
 }
 
 void gameover_loop(void){
 
-bool redraw = true;
-al_start_timer(timer);
-bool gameover_done = false;	
-ALLEGRO_FONT *bigfont = al_load_ttf_font("fonts/trebuc.ttf",60,0);
-ALLEGRO_FONT *smallfont = al_load_ttf_font("fonts/trebuc.ttf",40,0);
+	bool redraw = true;
+	al_start_timer(timer);
+	bool gameover_done = false;	
+	ALLEGRO_FONT *bigfont = al_load_ttf_font("fonts/trebuc.ttf",60,0);
+	ALLEGRO_FONT *smallfont = al_load_ttf_font("fonts/trebuc.ttf",40,0);
 
 
-while( !gameover_done){
+	while( !gameover_done){
 
-ALLEGRO_EVENT event;
-al_wait_for_event(event_queue, &event);
+		ALLEGRO_EVENT event;
+		al_wait_for_event(event_queue, &event);
 
-	if(event.type == ALLEGRO_EVENT_TIMER){
-		redraw = true;
-	}
-	
-	else if(event.type == ALLEGRO_EVENT_DISPLAY_CLOSE){
-	gameover_done = true;
-	}
-
-	else if(event.type == ALLEGRO_EVENT_KEY_DOWN){
-	
-		if(event.keyboard.keycode == ALLEGRO_KEY_ESCAPE){
-			lostGame = false; abort_game("Killed at gameover screen");
+		if(event.type == ALLEGRO_EVENT_TIMER){
+			redraw = true;
 		}
-		if(event.keyboard.keycode == ALLEGRO_KEY_R){
-			gameover_done = true; redraw = false;
-			al_stop_timer(timer); 
-			game_loop();
-		}	
-	
-	}
-	if(redraw && al_is_event_queue_empty(event_queue)){
-		redraw = false;
-		al_clear_to_color(al_map_rgb(0,200,0));
-		   al_clear_to_color(al_map_rgb(0,0,0));
-		   al_draw_text(bigfont, al_map_rgb(255,0,0), SCREEN_W/2, SCREEN_H/4,ALLEGRO_ALIGN_CENTRE, "Game over :(");
-		   al_draw_text(smallfont, al_map_rgb(255,0,0), SCREEN_W/2, (SCREEN_H/4)+90,ALLEGRO_ALIGN_CENTRE, "Press r to retry.");
-		   al_draw_text(smallfont, al_map_rgb(255,0,0), SCREEN_W/2, (SCREEN_H/4)+150,ALLEGRO_ALIGN_CENTRE, "Press ESC to quit.");
-		   al_draw_text(smallfont, al_map_rgb(255,0,0), SCREEN_W/2,20,ALLEGRO_ALIGN_CENTRE, "AllegroPong");
-		
-		al_flip_display();
-	
-	}
 
-al_stop_timer(timer);
-}
+		else if(event.type == ALLEGRO_EVENT_DISPLAY_CLOSE){
+			gameover_done = true;
+		}
+
+		else if(event.type == ALLEGRO_EVENT_KEY_DOWN){
+
+			if(event.keyboard.keycode == ALLEGRO_KEY_ESCAPE){
+				lostGame = false; abort_game("Killed at gameover screen");
+			}
+			if(event.keyboard.keycode == ALLEGRO_KEY_R){
+				gameover_done = true; redraw = false;
+				al_stop_timer(timer); 
+				game_loop();
+			}	
+
+		}
+		if(redraw && al_is_event_queue_empty(event_queue)){
+			redraw = false;
+			al_clear_to_color(al_map_rgb(0,200,0));
+			al_clear_to_color(al_map_rgb(0,0,0));
+			al_draw_text(bigfont, al_map_rgb(255,0,0), SCREEN_W/2, SCREEN_H/4,ALLEGRO_ALIGN_CENTRE, "Game over :(");
+			al_draw_text(smallfont, al_map_rgb(255,0,0), SCREEN_W/2, (SCREEN_H/4)+90,ALLEGRO_ALIGN_CENTRE, "Press r to retry.");
+			al_draw_text(smallfont, al_map_rgb(255,0,0), SCREEN_W/2, (SCREEN_H/4)+150,ALLEGRO_ALIGN_CENTRE, "Press ESC to quit.");
+			al_draw_text(smallfont, al_map_rgb(255,0,0), SCREEN_W/2,20,ALLEGRO_ALIGN_CENTRE, "AllegroPong");
+
+			al_flip_display();
+
+		}
+
+		al_stop_timer(timer);
+	}
 }
 
 int main(int argc, char* argv[])
 {
-init();
-splash_loop();
-game_loop();
-while(lostGame){ gameover_loop(); }
-shutdown();
+	init();
+	splash_loop();
+	game_loop();
+	while(lostGame){ gameover_loop(); }
+	shutdown();
 }
