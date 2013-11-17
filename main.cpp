@@ -153,8 +153,6 @@ al_convert_mask_to_alpha(sprite,al_map_rgb(255,255,255));
 al_convert_mask_to_alpha(sprite2,al_map_rgb(255,255,255));
 al_convert_mask_to_alpha(ball,al_map_rgb(255,255,255));
 
-printf("b1->x == %f",b1->x);
-
 while( !done ){
 
 	ALLEGRO_EVENT event;
@@ -304,7 +302,6 @@ al_wait_for_event(event_queue, &event);
 		   al_clear_to_color(al_map_rgb(0,0,0));
 		   al_draw_text(bigfont, al_map_rgb(255,0,0), SCREEN_W/2, SCREEN_H/4,ALLEGRO_ALIGN_CENTRE, "Press S to start.");
 		   al_draw_text(smallfont, al_map_rgb(255,0,0), SCREEN_W/2,20,ALLEGRO_ALIGN_CENTRE, "AllegroPong");
-		   //rotate_sprite(display,sprite,120,120,testAngle);
 		   al_flip_display();
 	
 	}
@@ -333,14 +330,12 @@ al_wait_for_event(event_queue, &event);
 	
 	else if(event.type == ALLEGRO_EVENT_DISPLAY_CLOSE){
 	gameover_done = true;
-	//break;
 	}
 
 	else if(event.type == ALLEGRO_EVENT_KEY_DOWN){
 	
 		if(event.keyboard.keycode == ALLEGRO_KEY_ESCAPE){
-			//abort_game("killed at gameOver screen");
-			lostGame = false; break;
+			lostGame = false; abort_game("Killed at gameover screen");
 		}
 		if(event.keyboard.keycode == ALLEGRO_KEY_R){
 			gameover_done = true; redraw = false;

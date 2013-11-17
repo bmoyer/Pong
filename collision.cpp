@@ -10,3 +10,12 @@ int bounding_box_collision(int b1_x, int b1_y, int b1_w, int b1_h, int b2_x, int
     return 1;
 }
 
+int ball_wall_collision(int ballX, int ballY, int ballDx, int ballDy, int ballWidth, int ballHeight, int screenWidth, int screenHeight)
+{
+if ( (ballX + ballHeight) > screenWidth && ballDx > 0) { return 1; }
+if ( (ballY + ballHeight) > screenHeight && ballDy > 0) { return 1; }
+if ( ballY <= 0 && ballDy < 0) { return 1; }
+if ( ballX <= 0 && ballDx < 0) { return 1; }
+else { return 0; }
+
+}
