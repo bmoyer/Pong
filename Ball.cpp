@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <float.h>
+#include <cstdlib>
 class Ball{
 
 public:
@@ -12,13 +13,21 @@ public:
 	float speed;
 	Ball();
 	~Ball();
+
+	void Move();
 };
 
-Ball::Ball(){
-
+Ball::Ball(){/*
 speed = 3.0;
 x = 150.0, y = 150.0;
-dx = -3.0, dy = 3.0;
+dx = -1.0, dy = 1.0;
+*/
+
+speed = 4.0;
+x = rand() % 100 + 100;
+y = rand() % 100 + 100;
+if(rand() % 2) { dx = 1; } else { dx = -1; }
+if(rand() % 2) { dy = 1; } else { dy = -1; }
 
 }
 
@@ -27,4 +36,9 @@ Ball::~Ball(){
 }
 
 
+
+void Ball::Move(){
+x += dx*speed;
+y += dy*speed;
+}
 

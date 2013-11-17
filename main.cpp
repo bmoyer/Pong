@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <cmath>
 #include <string>
+#include <vector>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_ttf.h>
 #include <allegro5/allegro_image.h>
@@ -37,14 +38,12 @@ ALLEGRO_BITMAP *lifesprite;
 bool key[4] = { false, false, false, false };
 
 //setting up sprite coordinates
-float sprite_x = 0, ball_x = 150;
-float sprite_y = SCREEN_H / 2.0 - SPRITE_HEIGHT / 2.0, ball_y = 150;
-float sprite_dx = -4.0, sprite_dy = 4.0, ball_dx = -3.0, ball_dy = 3.0;
-
+float sprite_y = SCREEN_H / 2.0 - SPRITE_HEIGHT / 2.0;
+float sprite_x = 0, sprite_dx = -4.0, sprite_dy = 4.0;
 float sprite2_y = SCREEN_H/2.0 - SPRITE_HEIGHT / 2.0, sprite2_x = SCREEN_W - SPRITE_WIDTH;
 float sprite2_dx = COMPUTER_SPEED, sprite2_dy = COMPUTER_SPEED;
 
-Ball *b1;
+std::vector<Ball> balls;
 
 void abort_game(const char *message){
 	printf("%s\n", message);
@@ -54,8 +53,6 @@ void abort_game(const char *message){
 void reset_object_positions(){
 sprite_x = 0; sprite_y = SCREEN_H/2.0-SPRITE_HEIGHT/2.0;
 sprite_dx = -4.0; sprite_dy = 4.0;
-ball_x = 150; ball_y = 150;
-ball_dx = -1.0; ball_dy = 1.0;
 sprite2_y = SCREEN_H/2.0 - SPRITE_HEIGHT/2.0; sprite2_x = SCREEN_W - SPRITE_WIDTH;
 sprite2_dx = COMPUTER_SPEED; sprite2_dy = COMPUTER_SPEED;
 
@@ -63,8 +60,9 @@ sprite2_dx = COMPUTER_SPEED; sprite2_dy = COMPUTER_SPEED;
 }
 
 void init(void){
-	b1 = new  Ball();
-	
+	//adding one ball to vector
+	balls.push_back(Ball());
+
 	if( !al_init() ){
 	abort_game("Failed to initalize Allegro");
 	}
@@ -144,7 +142,7 @@ bool redraw = true;
 al_start_timer(timer);
 ALLEGRO_FONT *smallfont = al_load_ttf_font("fonts/trebuc.ttf",20,0);
 int points = 0;
-int numLives = 2;
+int numLives = 15;
 lostGame = false;
 done = false;
 reset_object_positions();
@@ -166,17 +164,23 @@ while( !done ){
 		if(key[KEY_DOWN] && sprite_y < SCREEN_H - SPRITE_HEIGHT){
 			sprite_y = sprite_y + speed;
 		}
-		ball_x += ball_dx*BALL_SPEED;
-		ball_y += ball_dy*BALL_SPEED;
 		
-		
+		for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
+		it->Move();
+		}		
 
+	
 		if( sprite2_y+sprite2_dy > 0 && sprite2_y+SPRITE_HEIGHT+sprite2_dy < SCREEN_H){
 		sprite2_y += sprite2_dy;
 		}
 		
-		if( sprite2_y+(SPRITE_HEIGHT/2) < ball_y+(BALL_HEIGHT/2)) { sprite2_dy = abs(sprite2_dy); }
-		if( sprite2_y+(SPRITE_HEIGHT/2) > ball_y+(BALL_HEIGHT/2)) { sprite2_dy = -1*abs(sprite2_dy); }
+		
+		for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
+		
+		if( sprite2_y+(SPRITE_HEIGHT/2) < it->y+(BALL_HEIGHT/2)) { sprite2_dy = abs(sprite2_dy); }
+		if( sprite2_y+(SPRITE_HEIGHT/2) > it->y+(BALL_HEIGHT/2)) { sprite2_dy = -1*abs(sprite2_dy); }
+		
+		}		
 		
 		redraw = true;
 	}
@@ -211,41 +215,59 @@ while( !done ){
 	}
 		
 	//hitting walls: RIGHT, BOTTOM, TOP, LEFT
-	if( (ball_x + BALL_WIDTH) > SCREEN_W && ball_dx > 0 ) { points+=2; ball_dx = -1*ball_dx; ball_dy = 1*ball_dy; BALL_SPEED-=.5; }
-	if( (ball_y + BALL_HEIGHT) > SCREEN_H && ball_dy > 0 ) { ball_dx = 1*ball_dx; ball_dy = -1*ball_dy;BALL_SPEED-=.5; }
-	if( (ball_y <=0 && ball_dy < 0)) { ball_dx = 1*ball_dx; ball_dy = -1*ball_dy; BALL_SPEED -=.5; }
-	if( (ball_x <=0 && ball_dx < 0 )) {
-	 ball_dx = abs(ball_dx);
-	 ball_dy = 1*ball_dy; 
+	for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
+	
+	if( (it->x + BALL_WIDTH) > SCREEN_W && it->dx > 0 ) { points+=2; it->dx = -1*it->dx; it->dy = 1*it->dy; it->speed = it->speed -.5; }
+	if( (it->y + BALL_HEIGHT) > SCREEN_H && it->dy > 0 ) { it->dx = 1*it->dx; it->dy = -1*it->dy; it->speed =it->speed-.5; }
+	if( (it->y <=0 && it->dy < 0)) { it->dx = 1*it->dx; it->dy = -1*it->dy; it->speed = it->speed -.5; }
+	if( (it->x <=0 && it->dx < 0 )) {
+	 it->dx = abs(it->dx);
+	 it->dy = 1*it->dy; 
 	numLives--;
-	BALL_SPEED-=.5;
+	it->speed= it->speed - .5;
 	if(numLives<=0) { lostGame = true; done = true; }
 	}
-
+	
+	}		
+	
 	//player paddle collision
+	for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
+	
 	if(bounding_box_collision(sprite_x,sprite_y,SPRITE_WIDTH,SPRITE_HEIGHT,
-		ball_x, ball_y, BALL_WIDTH, BALL_HEIGHT))
+		it->x, it->y, BALL_WIDTH, BALL_HEIGHT))
 	{
-	ball_dx = abs(ball_dx);
+	it->dx = abs(it->dx);
 	points++;
-	BALL_SPEED+= 1;
+	it->speed = it-> speed+ 1.0;
 	}
 	
+
+	}	
 	//computer paddle collision
+	for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
+	
 	if(bounding_box_collision(sprite2_x,sprite2_y,SPRITE_WIDTH,SPRITE_HEIGHT,
-		ball_x, ball_y, BALL_WIDTH, BALL_HEIGHT))
+		it->x, it->y, BALL_WIDTH, BALL_HEIGHT))
 	{
-	ball_dx = -1*abs(ball_dx);
+	it->dx = -1*abs(it->dx);
 	//points++;
-	BALL_SPEED+= 1;
+	it->speed = it->speed+ 1.0;
 	}
+
+
+	}	
+
 	//redraw everything we've updated
 	if(redraw && al_is_event_queue_empty(event_queue)){
 		redraw = false;
 		al_clear_to_color(al_map_rgb(0,0,0));
 		al_draw_bitmap(sprite,sprite_x,sprite_y,0);
 		al_draw_bitmap(sprite2,sprite2_x,sprite2_y,0);
-		al_draw_bitmap(ball,ball_x,ball_y,0);
+	
+		for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){	
+		al_draw_bitmap(ball,it->x,it->y,0);
+		}
+		
 		al_draw_bitmap(lifesprite,20,20,0);
 		al_draw_textf(smallfont, al_map_rgb(255,255,255), SCREEN_W/2,20,ALLEGRO_ALIGN_CENTRE, "Points: %d",points);
 		al_draw_textf(smallfont, al_map_rgb(255,255,255), 43,20,ALLEGRO_ALIGN_CENTRE, "x%d",numLives);
