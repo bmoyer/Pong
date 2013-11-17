@@ -1,15 +1,18 @@
-#include <allegro5/allegro5.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <cmath>
 #include <string>
 #include <vector>
+
+#include <allegro5/allegro5.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_ttf.h>
 #include <allegro5/allegro_image.h>
+
 #include "collision.cpp"
 #include "Ball.cpp"
+
 #define NO_COLLISION -1
 #define COL_LEFT 0
 #define COL_RIGHT 1
@@ -19,23 +22,22 @@
 
 const int SCREEN_W = 640; //default 640
 const int SCREEN_H = 480;
-const int SPRITE_HEIGHT =80; //default.950
+const int SPRITE_HEIGHT =80; //default 80
 const int SPRITE_WIDTH = 16;  //default 16
-const int BALL_HEIGHT = 20;
-const int BALL_WIDTH = 20;
-float BALL_SPEED = 3.0;
 int speed = 7;
 int numLives;
 bool done, lostGame;
 enum MYKEYS {
 	KEY_UP, KEY_DOWN
 };
+bool key[4] = { false, false, false, false };
+
 ALLEGRO_EVENT_QUEUE *event_queue;
 ALLEGRO_TIMER *timer;
 ALLEGRO_DISPLAY *display;
 ALLEGRO_BITMAP *sprite = NULL, *sprite2 = NULL, *ball = NULL;
 ALLEGRO_BITMAP *lifesprite;
-bool key[4] = { false, false, false, false };
+std::vector<Ball> balls;
 
 //setting up sprite coordinates
 float sprite_y = SCREEN_H / 2.0 - SPRITE_HEIGHT / 2.0;
@@ -43,7 +45,6 @@ float sprite_x = 0, sprite_dx = -4.0, sprite_dy = 4.0;
 float sprite2_y = SCREEN_H/2.0 - SPRITE_HEIGHT / 2.0, sprite2_x = SCREEN_W - SPRITE_WIDTH;
 float sprite2_dx = COMPUTER_SPEED, sprite2_dy = COMPUTER_SPEED;
 
-std::vector<Ball> balls;
 
 void abort_game(const char *message){
 	printf("%s\n", message);
@@ -55,8 +56,6 @@ void reset_object_positions(){
 	sprite_dx = -4.0; sprite_dy = 4.0;
 	sprite2_y = SCREEN_H/2.0 - SPRITE_HEIGHT/2.0; sprite2_x = SCREEN_W - SPRITE_WIDTH;
 	sprite2_dx = COMPUTER_SPEED; sprite2_dy = COMPUTER_SPEED;
-
-
 }
 
 void init(void){
@@ -176,8 +175,8 @@ void game_loop(void){
 
 			for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
 
-				if( sprite2_y+(SPRITE_HEIGHT/2) < it->y+(BALL_HEIGHT/2)) { sprite2_dy = abs(sprite2_dy); }
-				if( sprite2_y+(SPRITE_HEIGHT/2) > it->y+(BALL_HEIGHT/2)) { sprite2_dy = -1*abs(sprite2_dy); }
+				if( sprite2_y+(SPRITE_HEIGHT/2) < it->y+(it->height/2)) { sprite2_dy = abs(sprite2_dy); }
+				if( sprite2_y+(SPRITE_HEIGHT/2) > it->y+(it->height/2)) { sprite2_dy = -1*abs(sprite2_dy); }
 
 			}		
 			if( (balls.size() * balls.size() * 10) < points){
@@ -218,8 +217,8 @@ void game_loop(void){
 		//hitting walls: RIGHT, BOTTOM, TOP, LEFT
 		for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
 
-			if( (it->x + BALL_WIDTH) > SCREEN_W && it->dx > 0 ) { points+=2; it->dx = -1*it->dx; it->dy = 1*it->dy; it->speed = it->speed*0.95; }
-			if( (it->y + BALL_HEIGHT) > SCREEN_H && it->dy > 0 ) { it->dx = 1*it->dx; it->dy = -1*it->dy; it->speed =it->speed*0.95; }
+			if( (it->x + it->width) > SCREEN_W && it->dx > 0 ) { points+=2; it->dx = -1*it->dx; it->dy = 1*it->dy; it->speed = it->speed*0.95; }
+			if( (it->y + it->height) > SCREEN_H && it->dy > 0 ) { it->dx = 1*it->dx; it->dy = -1*it->dy; it->speed =it->speed*0.95; }
 			if( (it->y <=0 && it->dy < 0)) { it->dx = 1*it->dx; it->dy = -1*it->dy; it->speed = it->speed*0.95; }
 			if( (it->x <=0 && it->dx < 0 )) {
 				it->dx = abs(it->dx);
@@ -235,7 +234,7 @@ void game_loop(void){
 		for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
 
 			if(bounding_box_collision(sprite_x,sprite_y,SPRITE_WIDTH,SPRITE_HEIGHT,
-						it->x, it->y, BALL_WIDTH, BALL_HEIGHT))
+						it->x, it->y, it->width, it->height))
 			{
 				it->dx = abs(it->dx);
 				points++;
@@ -248,7 +247,7 @@ void game_loop(void){
 		for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
 
 			if(bounding_box_collision(sprite2_x,sprite2_y,SPRITE_WIDTH,SPRITE_HEIGHT,
-						it->x, it->y, BALL_WIDTH, BALL_HEIGHT))
+						it->x, it->y, it->width, it->height))
 			{
 				it->dx = -1*abs(it->dx);
 				//points++;
@@ -276,12 +275,9 @@ void game_loop(void){
 		}
 
 	}
-	//test:
 	lostGame = true;
 	al_stop_timer(timer);
 }
-
-
 
 void splash_loop(void){
 
