@@ -17,12 +17,7 @@ public:
 	void Move();
 };
 
-Ball::Ball(){/*
-speed = 3.0;
-x = 150.0, y = 150.0;
-dx = -1.0, dy = 1.0;
-*/
-
+Ball::Ball(){
 speed = 4.0;
 x = rand() % 100 + 100;
 y = rand() % 100 + 100;
