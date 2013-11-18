@@ -19,7 +19,6 @@ public:
 
 Ball::Ball(){
 	width = 20; height = 20;
-
 	speed = 4.0;
 	x = rand() % 100 + 100;
 	y = rand() % 100 + 100;

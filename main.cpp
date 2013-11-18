@@ -4,6 +4,7 @@
 #include <cmath>
 #include <string>
 #include <vector>
+#include <cstdlib>
 
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_font.h>
@@ -12,19 +13,21 @@
 
 #include "collision.cpp"
 #include "Ball.cpp"
+#include "Modifier.cpp"
+#include "Powerup.cpp"
 
 #define NO_COLLISION -1
 #define COL_LEFT 0
 #define COL_RIGHT 1
 #define COL_UP 2
 #define COL_DOWN 3
-#define COMPUTER_SPEED 5
 
 const int SCREEN_W = 640; //default 640
 const int SCREEN_H = 480;
 const int SPRITE_HEIGHT =80; //default 80
 const int SPRITE_WIDTH = 16;  //default 16
 int speed = 7;
+int COMPUTER_SPEED = 5;
 int numLives;
 bool done, lostGame;
 enum MYKEYS {
@@ -37,7 +40,14 @@ ALLEGRO_TIMER *timer;
 ALLEGRO_DISPLAY *display;
 ALLEGRO_BITMAP *sprite = NULL, *sprite2 = NULL, *ball = NULL;
 ALLEGRO_BITMAP *lifesprite;
+ALLEGRO_BITMAP *modsprite;
+
+ALLEGRO_FONT *size20font;
+ALLEGRO_FONT *size40font;
+ALLEGRO_FONT *size60font;
+
 std::vector<Ball> balls;
+std::vector<Modifier *> modifiers;
 
 //setting up sprite coordinates
 float sprite_y = SCREEN_H / 2.0 - SPRITE_HEIGHT / 2.0;
@@ -61,7 +71,13 @@ void reset_object_positions(){
 void init(void){
 
 	balls.push_back(Ball());
+	/*
+	Powerup *p = new Powerup;
+	modifiers.push_back(p);
 
+	Modifier *m = new Modifier;
+	modifiers.push_back(m);	
+	*/
 	if( !al_init() ){
 		abort_game("Failed to initalize Allegro");
 	}
@@ -88,6 +104,7 @@ void init(void){
 	sprite = al_load_bitmap("images/red.bmp");
 	sprite2 = al_load_bitmap("images/green.bmp");
 	lifesprite = al_create_bitmap(SPRITE_WIDTH/4,SPRITE_HEIGHT/4);
+	modsprite = al_create_bitmap(SPRITE_WIDTH/2,SPRITE_HEIGHT/2);
 	ball = al_load_bitmap("images/ball.bmp");
 
 	if(!sprite || !sprite2 || !lifesprite){
@@ -104,18 +121,26 @@ void init(void){
 
 	al_set_target_bitmap(lifesprite);
 	al_clear_to_color(al_map_rgb(255,0,0));
+	al_set_target_bitmap(modsprite);
+	al_clear_to_color(al_map_rgb(100,0,200));
+	
+	
 	al_set_target_bitmap(al_get_backbuffer(display));
 
 	event_queue = al_create_event_queue();
 	if( !event_queue ){
 		abort_game("Failed to create event queue");
 	}
-
+	
 	al_register_event_source(event_queue, al_get_keyboard_event_source());
 	al_register_event_source(event_queue, al_get_timer_event_source(timer));
 	al_register_event_source(event_queue, al_get_display_event_source(display));
 	al_init_font_addon();	
+	
 	al_init_ttf_addon();
+	size20font = al_load_ttf_font("fonts/trebuc.ttf",20,0);
+	size40font = al_load_ttf_font("fonts/trebuc.ttf",40,0);
+	size60font = al_load_ttf_font("fonts/trebuc.ttf",60,0);
 	al_clear_to_color(al_map_rgb(0,0,0));
 	al_flip_display();	
 
@@ -138,7 +163,6 @@ void game_loop(void){
 
 	bool redraw = true;
 	al_start_timer(timer);
-	ALLEGRO_FONT *smallfont = al_load_ttf_font("fonts/trebuc.ttf",20,0);
 	int points = 0;
 	int numLives = 1000;
 	lostGame = false;
@@ -180,8 +204,15 @@ void game_loop(void){
 
 			}		
 			if( (balls.size() * balls.size() * 10) < points){
-				balls.push_back(Ball());
-			}	
+				numLives++; balls.push_back(Ball());
+			}
+			
+			if( (rand() % 200 == 100) ) { 
+
+				//Modifier *m = new Modifier;
+				modifiers.push_back(new Modifier);	
+			}
+				
 			redraw = true;
 		}
 
@@ -242,7 +273,27 @@ void game_loop(void){
 			}
 
 
-		}	
+		}
+
+		//player paddle-modifier collision
+
+		for(int i = 0; i < modifiers.size(); i++){
+		
+			if(bounding_box_collision(sprite_x, sprite_y, SPRITE_WIDTH,SPRITE_HEIGHT,
+						modifiers[i]->x, modifiers[i]->y, modifiers[i]->width, modifiers[i]->height))
+			{
+				modifiers[i]->OnCollision();
+				delete modifiers[i];
+				modifiers.erase( modifiers.begin() + i);
+			
+			}
+			else
+			{
+			//////
+			}
+		
+		}
+	
 		//computer paddle collision
 		for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
 
@@ -267,10 +318,15 @@ void game_loop(void){
 			for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){	
 				al_draw_bitmap(ball,it->x,it->y,0);
 			}
+	
+			for(int j = 0; j < modifiers.size(); j++){	
+				al_draw_bitmap(modsprite,modifiers[j]->x,modifiers[j]->y,0);
+			}
+			
 
 			al_draw_bitmap(lifesprite,20,20,0);
-			al_draw_textf(smallfont, al_map_rgb(255,255,255), SCREEN_W/2,20,ALLEGRO_ALIGN_CENTRE, "Points: %d",points);
-			al_draw_textf(smallfont, al_map_rgb(255,255,255), 43,20,ALLEGRO_ALIGN_CENTRE, "x%d",numLives);
+			al_draw_textf(size20font, al_map_rgb(255,255,255), SCREEN_W/2,20,ALLEGRO_ALIGN_CENTRE, "Points: %d",points);
+			al_draw_textf(size20font, al_map_rgb(255,255,255), 43,20,ALLEGRO_ALIGN_CENTRE, "x%d",numLives);
 			al_flip_display();
 		}
 
@@ -284,8 +340,6 @@ void splash_loop(void){
 	bool redraw = true;
 	al_start_timer(timer);
 	bool splash_done;	
-	ALLEGRO_FONT *bigfont = al_load_ttf_font("fonts/trebuc.ttf",60,0);
-	ALLEGRO_FONT *smallfont = al_load_ttf_font("fonts/trebuc.ttf",40,0);
 
 	al_convert_mask_to_alpha(sprite,al_map_rgb(255,255,255));
 
@@ -319,8 +373,8 @@ void splash_loop(void){
 			redraw = false;
 			al_clear_to_color(al_map_rgb(0,200,0));
 			al_clear_to_color(al_map_rgb(0,0,0));
-			al_draw_text(bigfont, al_map_rgb(255,0,0), SCREEN_W/2, SCREEN_H/4,ALLEGRO_ALIGN_CENTRE, "Press S to start.");
-			al_draw_text(smallfont, al_map_rgb(255,0,0), SCREEN_W/2,20,ALLEGRO_ALIGN_CENTRE, "AllegroPong");
+			al_draw_text(size60font, al_map_rgb(255,0,0), SCREEN_W/2, SCREEN_H/4,ALLEGRO_ALIGN_CENTRE, "Press S to start.");
+			al_draw_text(size40font, al_map_rgb(255,0,0), SCREEN_W/2,20,ALLEGRO_ALIGN_CENTRE, "AllegroPong");
 			al_flip_display();
 
 		}
@@ -334,8 +388,6 @@ void gameover_loop(void){
 	bool redraw = true;
 	al_start_timer(timer);
 	bool gameover_done = false;	
-	ALLEGRO_FONT *bigfont = al_load_ttf_font("fonts/trebuc.ttf",60,0);
-	ALLEGRO_FONT *smallfont = al_load_ttf_font("fonts/trebuc.ttf",40,0);
 
 
 	while( !gameover_done){
@@ -367,13 +419,12 @@ void gameover_loop(void){
 			redraw = false;
 			al_clear_to_color(al_map_rgb(0,200,0));
 			al_clear_to_color(al_map_rgb(0,0,0));
-			al_draw_text(bigfont, al_map_rgb(255,0,0), SCREEN_W/2, SCREEN_H/4,ALLEGRO_ALIGN_CENTRE, "Game over :(");
-			al_draw_text(smallfont, al_map_rgb(255,0,0), SCREEN_W/2, (SCREEN_H/4)+90,ALLEGRO_ALIGN_CENTRE, "Press r to retry.");
-			al_draw_text(smallfont, al_map_rgb(255,0,0), SCREEN_W/2, (SCREEN_H/4)+150,ALLEGRO_ALIGN_CENTRE, "Press ESC to quit.");
-			al_draw_text(smallfont, al_map_rgb(255,0,0), SCREEN_W/2,20,ALLEGRO_ALIGN_CENTRE, "AllegroPong");
+			al_draw_text(size60font, al_map_rgb(255,0,0), SCREEN_W/2, SCREEN_H/4,ALLEGRO_ALIGN_CENTRE, "Game over :(");
+			al_draw_text(size40font, al_map_rgb(255,0,0), SCREEN_W/2, (SCREEN_H/4)+90,ALLEGRO_ALIGN_CENTRE, "Press r to retry.");
+			al_draw_text(size40font, al_map_rgb(255,0,0), SCREEN_W/2, (SCREEN_H/4)+150,ALLEGRO_ALIGN_CENTRE, "Press ESC to quit.");
+			al_draw_text(size40font, al_map_rgb(255,0,0), SCREEN_W/2,20,ALLEGRO_ALIGN_CENTRE, "AllegroPong");
 
 			al_flip_display();
-
 		}
 
 		al_stop_timer(timer);
