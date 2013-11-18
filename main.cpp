@@ -15,6 +15,9 @@
 #include "Ball.cpp"
 #include "Modifier.cpp"
 #include "Powerup.cpp"
+#include "Paddle.cpp"
+#include "Player.cpp"
+#include "global.h"
 
 #define NO_COLLISION -1
 #define COL_LEFT 0
@@ -22,13 +25,10 @@
 #define COL_UP 2
 #define COL_DOWN 3
 
-const int SCREEN_W = 640; //default 640
-const int SCREEN_H = 480;
 const int SPRITE_HEIGHT =80; //default 80
 const int SPRITE_WIDTH = 16;  //default 16
-int speed = 7;
+int speed = 7;  //7 by default
 int COMPUTER_SPEED = 5;
-int numLives;
 bool done, lostGame;
 enum MYKEYS {
 	KEY_UP, KEY_DOWN
@@ -46,6 +46,7 @@ ALLEGRO_FONT *size20font;
 ALLEGRO_FONT *size40font;
 ALLEGRO_FONT *size60font;
 
+Player *player;
 std::vector<Ball> balls;
 std::vector<Modifier *> modifiers;
 
@@ -70,14 +71,9 @@ void reset_object_positions(){
 
 void init(void){
 
+	player = new Player();
 	balls.push_back(Ball());
-	/*
-	Powerup *p = new Powerup;
-	modifiers.push_back(p);
-
-	Modifier *m = new Modifier;
-	modifiers.push_back(m);	
-	*/
+	
 	if( !al_init() ){
 		abort_game("Failed to initalize Allegro");
 	}
@@ -163,8 +159,6 @@ void game_loop(void){
 
 	bool redraw = true;
 	al_start_timer(timer);
-	int points = 0;
-	int numLives = 1000;
 	lostGame = false;
 	done = false;
 	reset_object_positions();
@@ -203,14 +197,14 @@ void game_loop(void){
 				if( sprite2_y+(SPRITE_HEIGHT/2) > it->y+(it->height/2)) { sprite2_dy = -1*abs(sprite2_dy); }
 
 			}		
-			if( (balls.size() * balls.size() * 10) < points){
-				numLives++; balls.push_back(Ball());
+			if( (balls.size() * balls.size() * 10) < player->points){
+				player->numLives++; balls.push_back(Ball());
 			}
 			
 			if( (rand() % 200 == 100) ) { 
 
 				//Modifier *m = new Modifier;
-				modifiers.push_back(new Modifier);	
+				modifiers.push_back(new Powerup);	
 			}
 				
 			redraw = true;
@@ -248,15 +242,15 @@ void game_loop(void){
 		//hitting walls: RIGHT, BOTTOM, TOP, LEFT
 		for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
 
-			if( (it->x + it->width) > SCREEN_W && it->dx > 0 ) { points+=2; it->dx = -1*it->dx; it->dy = 1*it->dy; it->speed = it->speed*0.95; }
+			if( (it->x + it->width) > SCREEN_W && it->dx > 0 ) { player->points+=2; it->dx = -1*it->dx; it->dy = 1*it->dy; it->speed = it->speed*0.95; }
 			if( (it->y + it->height) > SCREEN_H && it->dy > 0 ) { it->dx = 1*it->dx; it->dy = -1*it->dy; it->speed =it->speed*0.95; }
 			if( (it->y <=0 && it->dy < 0)) { it->dx = 1*it->dx; it->dy = -1*it->dy; it->speed = it->speed*0.95; }
 			if( (it->x <=0 && it->dx < 0 )) {
 				it->dx = abs(it->dx);
 				it->dy = 1*it->dy; 
-				numLives--;
+				player->numLives--;
 				it->speed= it->speed*0.95;
-				if(numLives<=0) { lostGame = true; done = true; }
+				if(player->numLives<=0) { lostGame = true; done = true; }
 			}
 
 		}		
@@ -268,7 +262,7 @@ void game_loop(void){
 						it->x, it->y, it->width, it->height))
 			{
 				it->dx = abs(it->dx);
-				points++;
+				player->points++;
 				it->speed = it-> speed+ 1.0;
 			}
 
@@ -282,7 +276,7 @@ void game_loop(void){
 			if(bounding_box_collision(sprite_x, sprite_y, SPRITE_WIDTH,SPRITE_HEIGHT,
 						modifiers[i]->x, modifiers[i]->y, modifiers[i]->width, modifiers[i]->height))
 			{
-				modifiers[i]->OnCollision();
+				modifiers[i]->OnCollision();	
 				delete modifiers[i];
 				modifiers.erase( modifiers.begin() + i);
 			
@@ -301,7 +295,6 @@ void game_loop(void){
 						it->x, it->y, it->width, it->height))
 			{
 				it->dx = -1*abs(it->dx);
-				//points++;
 				it->speed = it->speed+ 1.0;
 			}
 
@@ -325,8 +318,8 @@ void game_loop(void){
 			
 
 			al_draw_bitmap(lifesprite,20,20,0);
-			al_draw_textf(size20font, al_map_rgb(255,255,255), SCREEN_W/2,20,ALLEGRO_ALIGN_CENTRE, "Points: %d",points);
-			al_draw_textf(size20font, al_map_rgb(255,255,255), 43,20,ALLEGRO_ALIGN_CENTRE, "x%d",numLives);
+			al_draw_textf(size20font, al_map_rgb(255,255,255), SCREEN_W/2,20,ALLEGRO_ALIGN_CENTRE, "Points: %d",player->points);
+			al_draw_textf(size20font, al_map_rgb(255,255,255), 43,20,ALLEGRO_ALIGN_CENTRE, "x%d",player->numLives);
 			al_flip_display();
 		}
 

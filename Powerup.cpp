@@ -4,11 +4,16 @@
 #include <float.h>
 #include <cstdlib>
 
-//#include "Modifier.cpp"
+
+#define ADDLIFE 1
+#define ADDSPEED 2
+
 
 class Powerup: public Modifier{
 
 public:
+	int type;	
+	
 	Powerup();
 	~Powerup();
 	virtual	void OnCollision();
@@ -16,6 +21,8 @@ public:
 };
 
 Powerup::Powerup(){
+
+type = rand()%2 + 1;
 
 }
 
@@ -26,7 +33,11 @@ Powerup::~Powerup(){
 
 void Powerup::OnCollision()  
 {
-	fprintf(stderr,"POWERUP COLLISION\n");
-	speed++;
+	if(type == ADDLIFE){
+	fprintf(stderr,"ADDLIFE COLLISION\n");
+	}
+	if(type == ADDSPEED){
+	fprintf(stderr,"ADDSPEED COLLISION\n");
+	}
 }
 
