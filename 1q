@@ -19,6 +19,7 @@
 #include "Player.cpp"
 #include "global.h"
 
+#define TICKS 60.0
 #define NO_COLLISION -1
 #define COL_LEFT 0
 #define COL_RIGHT 1
@@ -201,8 +202,9 @@ void game_loop(void){
 				player->numLives++; balls.push_back(Ball());
 			}
 			
-			if( (rand() % 600 == 100) ) { 
+			if( (rand() % 200 == 100) ) { 
 
+				//Modifier *m = new Modifier;
 				modifiers.push_back(new Powerup);	
 			}
 				
@@ -275,9 +277,8 @@ void game_loop(void){
 			if(bounding_box_collision(sprite_x, sprite_y, SPRITE_WIDTH,SPRITE_HEIGHT,
 						modifiers[i]->x, modifiers[i]->y, modifiers[i]->width, modifiers[i]->height))
 			{
-				modifiers[i]->OnCollision();	
-				if( modifiers[i]->GetType() == ADDLIFE ) {  player->numLives+=1; }
-				if( modifiers[i]->GetType() == ADDSPEED && speed < 12) { speed+=1; }
+				//modifiers[i]->OnCollision();	
+				if( modifiers[i].type == ADDLIFE ) { player->numLives++; }
 				delete modifiers[i];
 				modifiers.erase( modifiers.begin() + i);
 			

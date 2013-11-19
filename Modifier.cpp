@@ -9,13 +9,14 @@ class Modifier{
 
 public:
 	int width, height;
-	
+	int type;	
 	float x, y;
 	float dx, dy;
 	float speed;
 	Modifier();
 	~Modifier();
-	
+
+	virtual int GetType();	
 	virtual void OnCollision();
 };
 
@@ -31,4 +32,8 @@ Modifier::~Modifier(){
 void Modifier::OnCollision(){
 fprintf(stderr,"MODIFIER COLLISION\n");
 
+}
+
+int Modifier::GetType(){
+return 0; //default
 }
