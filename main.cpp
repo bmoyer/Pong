@@ -25,6 +25,8 @@
 #define COL_UP 2
 #define COL_DOWN 3
 
+#define BACKGROUNDCOLOR 0,102,153
+
 const int SPRITE_HEIGHT = 80; //default 80
 const int SPRITE_WIDTH = 16;  //default 16
 int speed = 7;  //7 by default
@@ -100,11 +102,11 @@ void init(void){
 		abort_game("Failed to create display");
 	}
 
-	sprite = al_load_bitmap("images/red.bmp");
-	sprite2 = al_load_bitmap("images/green.bmp");
+	sprite = al_load_bitmap("images/bwPaddle.bmp");
+	sprite2 = al_load_bitmap("images/bwPaddle.bmp");
 	lifesprite = al_create_bitmap(SPRITE_WIDTH/4,SPRITE_HEIGHT/4);
 	modsprite = al_create_bitmap(SPRITE_WIDTH/2,SPRITE_HEIGHT/2);
-	ball = al_load_bitmap("images/ball.bmp");
+	ball = al_load_bitmap("images/whiteball2.bmp");
 
 	if(!sprite || !sprite2 || !lifesprite){
 		al_destroy_display(display);
@@ -119,7 +121,7 @@ void init(void){
 	}
 
 	al_set_target_bitmap(lifesprite);
-	al_clear_to_color(al_map_rgb(255,0,0));
+	al_clear_to_color(al_map_rgb(0,0,0));
 	al_set_target_bitmap(modsprite);
 	al_clear_to_color(al_map_rgb(100,0,200));
 	
@@ -140,7 +142,7 @@ void init(void){
 	size20font = al_load_ttf_font("fonts/trebuc.ttf",20,0);
 	size40font = al_load_ttf_font("fonts/trebuc.ttf",40,0);
 	size60font = al_load_ttf_font("fonts/trebuc.ttf",60,0);
-	al_clear_to_color(al_map_rgb(192,192,192));
+	al_clear_to_color(al_map_rgb(BACKGROUNDCOLOR));
 	al_flip_display();	
 
 	done = false;
@@ -170,9 +172,11 @@ void game_loop(void){
 	playerPaddle->y = SCREEN_H/2.0 - playerPaddle->height/2.0;
 
 
-	al_convert_mask_to_alpha(sprite,al_map_rgb(255,255,255));
-	al_convert_mask_to_alpha(sprite2,al_map_rgb(255,255,255));
-	al_convert_mask_to_alpha(ball,al_map_rgb(255,255,255));
+	al_convert_mask_to_alpha(sprite,al_map_rgb(75,0,255));
+	al_convert_mask_to_alpha(sprite2,al_map_rgb(75,0,255));
+	al_convert_mask_to_alpha(ball,al_map_rgb(75,0,255));
+
+
 
 	while( !done ){
 
@@ -312,9 +316,10 @@ void game_loop(void){
 		//redraw everything we've updated
 		if(redraw && al_is_event_queue_empty(event_queue)){
 			redraw = false;
-			al_clear_to_color(al_map_rgb(192,192,192));
+			al_clear_to_color(al_map_rgb(BACKGROUNDCOLOR));
 			al_draw_bitmap(sprite,sprite_x,sprite_y,0);
 			al_draw_bitmap(sprite2,sprite2_x,sprite2_y,0);
+			
 
 			for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){	
 				al_draw_bitmap(ball,it->x,it->y,0);
@@ -342,7 +347,6 @@ void splash_loop(void){
 	al_start_timer(timer);
 	bool splash_done;	
 
-	al_convert_mask_to_alpha(sprite,al_map_rgb(255,255,255));
 
 	int testAngle;
 
@@ -373,7 +377,7 @@ void splash_loop(void){
 		if(redraw && al_is_event_queue_empty(event_queue)){
 			redraw = false;
 			al_clear_to_color(al_map_rgb(0,200,0));
-			al_clear_to_color(al_map_rgb(192,192,192));
+			al_clear_to_color(al_map_rgb(BACKGROUNDCOLOR));
 			al_draw_text(size60font, al_map_rgb(255,0,0), SCREEN_W/2, SCREEN_H/4,ALLEGRO_ALIGN_CENTRE, "Press S to start.");
 			al_draw_text(size40font, al_map_rgb(255,0,0), SCREEN_W/2,20,ALLEGRO_ALIGN_CENTRE, "AllegroPong");
 			al_flip_display();
@@ -419,7 +423,7 @@ void gameover_loop(void){
 		if(redraw && al_is_event_queue_empty(event_queue)){
 			redraw = false;
 			al_clear_to_color(al_map_rgb(0,200,0));
-			al_clear_to_color(al_map_rgb(192,192,192));
+			al_clear_to_color(al_map_rgb(BACKGROUNDCOLOR));
 			al_draw_text(size60font, al_map_rgb(255,0,0), SCREEN_W/2, SCREEN_H/4,ALLEGRO_ALIGN_CENTRE, "Game over :(");
 			al_draw_text(size40font, al_map_rgb(255,0,0), SCREEN_W/2, (SCREEN_H/4)+90,ALLEGRO_ALIGN_CENTRE, "Press r to retry.");
 			al_draw_text(size40font, al_map_rgb(255,0,0), SCREEN_W/2, (SCREEN_H/4)+150,ALLEGRO_ALIGN_CENTRE, "Press ESC to quit.");
