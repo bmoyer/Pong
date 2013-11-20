@@ -42,6 +42,9 @@ void Powerup::OnCollision()
 	if(type == ADDSPEED){
 		fprintf(stderr,"ADDSPEED COLLISION\n");
 	}
+	if(type == DESTROYBALL){
+		fprintf(stderr,"DESTROYBALL COLLISION\n");
+	}
 }
 
 void Powerup::InitType()

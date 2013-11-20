@@ -9,7 +9,8 @@ class Modifier{
 
 public:
 	int width, height;
-	int type;	
+	int type;
+	int ticksToLive;	
 	float x, y;
 	float dx, dy;
 	float speed;

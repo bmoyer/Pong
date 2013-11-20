@@ -42,15 +42,23 @@ bool key[4] = { false, false, false, false };
 ALLEGRO_EVENT_QUEUE *event_queue;
 ALLEGRO_TIMER *timer;
 ALLEGRO_DISPLAY *display;
+
+//general sprites
 ALLEGRO_BITMAP *sprite = NULL, *sprite2 = NULL, *ball = NULL;
 ALLEGRO_BITMAP *lifesprite;
 ALLEGRO_BITMAP *modsprite;
 
+//powerup sprites
+ALLEGRO_BITMAP *addspeed;
+ALLEGRO_BITMAP *addlife;
+
+//fonts
 ALLEGRO_FONT *size20font;
 ALLEGRO_FONT *size40font;
 ALLEGRO_FONT *size60font;
 ALLEGRO_FONT *digitalfont;
 
+//other game objects/containers
 Player *player;
 Paddle *playerPaddle;
 std::vector<Ball> balls;
@@ -110,6 +118,8 @@ void init(void){
 	lifesprite = al_create_bitmap(SPRITE_WIDTH/4,SPRITE_HEIGHT/4);
 	modsprite = al_create_bitmap(16,16);
 	ball = al_load_bitmap("images/whiteball2.bmp");
+	addspeed = al_load_bitmap("images/powerupnew.bmp");
+	addlife = al_load_bitmap("images/powerupnew.bmp");
 
 	if(!sprite || !sprite2 || !lifesprite){
 		al_destroy_display(display);
@@ -178,7 +188,8 @@ void game_loop(void){
 	al_convert_mask_to_alpha(sprite,al_map_rgb(75,0,255));
 	al_convert_mask_to_alpha(sprite2,al_map_rgb(75,0,255));
 	al_convert_mask_to_alpha(ball,al_map_rgb(75,0,255));
-
+	al_convert_mask_to_alpha(addspeed,al_map_rgb(75,0,255));
+	al_convert_mask_to_alpha(addlife,al_map_rgb(75,0,255));
 
 
 	while( !done ){
@@ -215,7 +226,7 @@ void game_loop(void){
 				player->numLives++; balls.push_back(Ball());
 			}
 			
-			if( (rand() % 600 == 100) ) { 
+			if( (rand() % 200 == 100) ) { 
 
 				modifiers.push_back(new Powerup);	
 			}
@@ -328,8 +339,9 @@ void game_loop(void){
 				al_draw_bitmap(ball,it->x,it->y,0);
 			}
 	
-			for(int j = 0; j < modifiers.size(); j++){	
-				al_draw_bitmap(modsprite,modifiers[j]->x,modifiers[j]->y,0);
+			for(int j = 0; j < modifiers.size(); j++){
+				if( modifiers[j]->type) { modsprite = addspeed; }	
+				al_draw_bitmap(addspeed,modifiers[j]->x,modifiers[j]->y,0);
 			}
 			
 
