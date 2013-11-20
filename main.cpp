@@ -25,7 +25,9 @@
 #define COL_UP 2
 #define COL_DOWN 3
 
-#define BACKGROUNDCOLOR 0,102,153
+//#define BACKGROUNDCOLOR 0,107,32
+#define BACKGROUNDCOLOR 0,51,51
+#define FONTCOLOR 255,255,255
 
 const int SPRITE_HEIGHT = 80; //default 80
 const int SPRITE_WIDTH = 16;  //default 16
@@ -47,6 +49,7 @@ ALLEGRO_BITMAP *modsprite;
 ALLEGRO_FONT *size20font;
 ALLEGRO_FONT *size40font;
 ALLEGRO_FONT *size60font;
+ALLEGRO_FONT *digitalfont;
 
 Player *player;
 Paddle *playerPaddle;
@@ -105,7 +108,7 @@ void init(void){
 	sprite = al_load_bitmap("images/bwPaddle.bmp");
 	sprite2 = al_load_bitmap("images/bwPaddle.bmp");
 	lifesprite = al_create_bitmap(SPRITE_WIDTH/4,SPRITE_HEIGHT/4);
-	modsprite = al_create_bitmap(SPRITE_WIDTH/2,SPRITE_HEIGHT/2);
+	modsprite = al_create_bitmap(16,16);
 	ball = al_load_bitmap("images/whiteball2.bmp");
 
 	if(!sprite || !sprite2 || !lifesprite){
@@ -123,7 +126,7 @@ void init(void){
 	al_set_target_bitmap(lifesprite);
 	al_clear_to_color(al_map_rgb(0,0,0));
 	al_set_target_bitmap(modsprite);
-	al_clear_to_color(al_map_rgb(100,0,200));
+	al_clear_to_color(al_map_rgb(255,255,255));
 	
 	
 	al_set_target_bitmap(al_get_backbuffer(display));
@@ -142,6 +145,7 @@ void init(void){
 	size20font = al_load_ttf_font("fonts/trebuc.ttf",20,0);
 	size40font = al_load_ttf_font("fonts/trebuc.ttf",40,0);
 	size60font = al_load_ttf_font("fonts/trebuc.ttf",60,0);
+	digitalfont = al_load_ttf_font("fonts/DS-DIGI.TTF",40,0);
 	al_clear_to_color(al_map_rgb(BACKGROUNDCOLOR));
 	al_flip_display();	
 
@@ -170,7 +174,6 @@ void game_loop(void){
 
 	//player paddle settings
 	playerPaddle->y = SCREEN_H/2.0 - playerPaddle->height/2.0;
-
 
 	al_convert_mask_to_alpha(sprite,al_map_rgb(75,0,255));
 	al_convert_mask_to_alpha(sprite2,al_map_rgb(75,0,255));
@@ -331,8 +334,8 @@ void game_loop(void){
 			
 
 			al_draw_bitmap(lifesprite,20,20,0);
-			al_draw_textf(size20font, al_map_rgb(255,255,255), SCREEN_W/2,20,ALLEGRO_ALIGN_CENTRE, "Points: %d",player->points);
-			al_draw_textf(size20font, al_map_rgb(255,255,255), 43,20,ALLEGRO_ALIGN_CENTRE, "x%d",player->numLives);
+			al_draw_textf(digitalfont, al_map_rgb(255,255,255), SCREEN_W/2,20,ALLEGRO_ALIGN_CENTRE, "%03d",player->points);
+			al_draw_textf(size20font, al_map_rgb(255,255,255), 47,20,ALLEGRO_ALIGN_CENTRE, "x%d",player->numLives);
 			al_flip_display();
 		}
 
@@ -378,8 +381,8 @@ void splash_loop(void){
 			redraw = false;
 			al_clear_to_color(al_map_rgb(0,200,0));
 			al_clear_to_color(al_map_rgb(BACKGROUNDCOLOR));
-			al_draw_text(size60font, al_map_rgb(255,0,0), SCREEN_W/2, SCREEN_H/4,ALLEGRO_ALIGN_CENTRE, "Press S to start.");
-			al_draw_text(size40font, al_map_rgb(255,0,0), SCREEN_W/2,20,ALLEGRO_ALIGN_CENTRE, "AllegroPong");
+			al_draw_text(size60font, al_map_rgb(FONTCOLOR), SCREEN_W/2, SCREEN_H/4,ALLEGRO_ALIGN_CENTRE, "Press S to start.");
+			al_draw_text(size40font, al_map_rgb(FONTCOLOR), SCREEN_W/2,20,ALLEGRO_ALIGN_CENTRE, "AllegroPong");
 			al_flip_display();
 
 		}
@@ -424,10 +427,10 @@ void gameover_loop(void){
 			redraw = false;
 			al_clear_to_color(al_map_rgb(0,200,0));
 			al_clear_to_color(al_map_rgb(BACKGROUNDCOLOR));
-			al_draw_text(size60font, al_map_rgb(255,0,0), SCREEN_W/2, SCREEN_H/4,ALLEGRO_ALIGN_CENTRE, "Game over :(");
-			al_draw_text(size40font, al_map_rgb(255,0,0), SCREEN_W/2, (SCREEN_H/4)+90,ALLEGRO_ALIGN_CENTRE, "Press r to retry.");
-			al_draw_text(size40font, al_map_rgb(255,0,0), SCREEN_W/2, (SCREEN_H/4)+150,ALLEGRO_ALIGN_CENTRE, "Press ESC to quit.");
-			al_draw_text(size40font, al_map_rgb(255,0,0), SCREEN_W/2,20,ALLEGRO_ALIGN_CENTRE, "AllegroPong");
+			al_draw_text(size60font, al_map_rgb(FONTCOLOR), SCREEN_W/2, SCREEN_H/4,ALLEGRO_ALIGN_CENTRE, "Game over :(");
+			al_draw_text(size40font, al_map_rgb(FONTCOLOR), SCREEN_W/2, (SCREEN_H/4)+90,ALLEGRO_ALIGN_CENTRE, "Press r to retry.");
+			al_draw_text(size40font, al_map_rgb(FONTCOLOR), SCREEN_W/2, (SCREEN_H/4)+150,ALLEGRO_ALIGN_CENTRE, "Press ESC to quit.");
+			al_draw_text(size40font, al_map_rgb(FONTCOLOR), SCREEN_W/2,20,ALLEGRO_ALIGN_CENTRE, "AllegroPong");
 
 			al_flip_display();
 		}
