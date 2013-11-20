@@ -4,6 +4,8 @@
 #include <float.h>
 #include <cstdlib>
 
+#include "global.h"
+
 class Paddle{
 
 public:
@@ -20,7 +22,10 @@ public:
 };
 
 Paddle::Paddle(){
-
+width = 16;
+height = 80;
+dx = -4.0;
+dy = 4.0;
 }
 
 Paddle::~Paddle(){

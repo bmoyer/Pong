@@ -47,6 +47,7 @@ ALLEGRO_FONT *size40font;
 ALLEGRO_FONT *size60font;
 
 Player *player;
+Paddle *playerPaddle;
 std::vector<Ball> balls;
 std::vector<Modifier *> modifiers;
 
@@ -72,6 +73,8 @@ void reset_object_positions(){
 void init(void){
 
 	player = new Player();
+	playerPaddle = new Paddle();
+	
 	balls.push_back(Ball());
 	
 	if( !al_init() ){
@@ -137,7 +140,7 @@ void init(void){
 	size20font = al_load_ttf_font("fonts/trebuc.ttf",20,0);
 	size40font = al_load_ttf_font("fonts/trebuc.ttf",40,0);
 	size60font = al_load_ttf_font("fonts/trebuc.ttf",60,0);
-	al_clear_to_color(al_map_rgb(0,0,0));
+	al_clear_to_color(al_map_rgb(192,192,192));
 	al_flip_display();	
 
 	done = false;
@@ -162,6 +165,10 @@ void game_loop(void){
 	lostGame = false;
 	done = false;
 	reset_object_positions();
+
+	//player paddle settings
+	playerPaddle->y = SCREEN_H/2.0 - playerPaddle->height/2.0;
+
 
 	al_convert_mask_to_alpha(sprite,al_map_rgb(255,255,255));
 	al_convert_mask_to_alpha(sprite2,al_map_rgb(255,255,255));
@@ -305,7 +312,7 @@ void game_loop(void){
 		//redraw everything we've updated
 		if(redraw && al_is_event_queue_empty(event_queue)){
 			redraw = false;
-			al_clear_to_color(al_map_rgb(0,0,0));
+			al_clear_to_color(al_map_rgb(192,192,192));
 			al_draw_bitmap(sprite,sprite_x,sprite_y,0);
 			al_draw_bitmap(sprite2,sprite2_x,sprite2_y,0);
 
@@ -366,7 +373,7 @@ void splash_loop(void){
 		if(redraw && al_is_event_queue_empty(event_queue)){
 			redraw = false;
 			al_clear_to_color(al_map_rgb(0,200,0));
-			al_clear_to_color(al_map_rgb(0,0,0));
+			al_clear_to_color(al_map_rgb(192,192,192));
 			al_draw_text(size60font, al_map_rgb(255,0,0), SCREEN_W/2, SCREEN_H/4,ALLEGRO_ALIGN_CENTRE, "Press S to start.");
 			al_draw_text(size40font, al_map_rgb(255,0,0), SCREEN_W/2,20,ALLEGRO_ALIGN_CENTRE, "AllegroPong");
 			al_flip_display();
@@ -412,7 +419,7 @@ void gameover_loop(void){
 		if(redraw && al_is_event_queue_empty(event_queue)){
 			redraw = false;
 			al_clear_to_color(al_map_rgb(0,200,0));
-			al_clear_to_color(al_map_rgb(0,0,0));
+			al_clear_to_color(al_map_rgb(192,192,192));
 			al_draw_text(size60font, al_map_rgb(255,0,0), SCREEN_W/2, SCREEN_H/4,ALLEGRO_ALIGN_CENTRE, "Game over :(");
 			al_draw_text(size40font, al_map_rgb(255,0,0), SCREEN_W/2, (SCREEN_H/4)+90,ALLEGRO_ALIGN_CENTRE, "Press r to retry.");
 			al_draw_text(size40font, al_map_rgb(255,0,0), SCREEN_W/2, (SCREEN_H/4)+150,ALLEGRO_ALIGN_CENTRE, "Press ESC to quit.");

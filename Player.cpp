@@ -17,7 +17,7 @@ public:
 
 Player::Player(){
 
-numLives = 100;
+numLives = 100000;
 points = 0;
 }
 
