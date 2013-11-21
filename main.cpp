@@ -25,7 +25,6 @@
 #define COL_UP 2
 #define COL_DOWN 3
 
-//#define BACKGROUNDCOLOR 0,107,32
 #define BACKGROUNDCOLOR 0,51,51
 #define FONTCOLOR 255,255,255
 
@@ -62,15 +61,9 @@ ALLEGRO_FONT *digitalfont;
 //other game objects/containers
 Player *player;
 Paddle *playerPaddle;
+Paddle *computerPaddle;
 std::vector<Ball> balls;
 std::vector<Modifier *> modifiers;
-
-//setting up sprite coordinates
-float sprite_y = SCREEN_H / 2.0 - SPRITE_HEIGHT / 2.0;
-float sprite_x = 0, sprite_dx = -4.0, sprite_dy = 4.0;
-float sprite2_y = SCREEN_H/2.0 - SPRITE_HEIGHT / 2.0, sprite2_x = SCREEN_W - SPRITE_WIDTH;
-float sprite2_dx = COMPUTER_SPEED, sprite2_dy = COMPUTER_SPEED;
-
 
 void abort_game(const char *message){
 	printf("%s\n", message);
@@ -78,17 +71,27 @@ void abort_game(const char *message){
 }
 
 void reset_object_positions(){
-	sprite_x = 0; sprite_y = SCREEN_H/2.0-SPRITE_HEIGHT/2.0;
-	sprite_dx = -4.0; sprite_dy = 4.0;
-	sprite2_y = SCREEN_H/2.0 - SPRITE_HEIGHT/2.0; sprite2_x = SCREEN_W - SPRITE_WIDTH;
-	sprite2_dx = COMPUTER_SPEED; sprite2_dy = COMPUTER_SPEED;
+	//player
+	playerPaddle->x = 0; playerPaddle->y = SCREEN_H/2.0-playerPaddle->height/2.0;
+	playerPaddle->dx = -4.0; playerPaddle->dy = 4.0;
+	playerPaddle->speed = 7;
+	
+	//computer
+	computerPaddle->y = SCREEN_H/2.0 - computerPaddle->height/2.0;
+	computerPaddle->x = SCREEN_W - computerPaddle->width;
+	computerPaddle->dx = 5;
+	computerPaddle->dy = 5;
+	computerPaddle->speed = 5; 
+
+	computerPaddle->y = SCREEN_H/2.0 - SPRITE_HEIGHT/2.0; computerPaddle->x = SCREEN_W - SPRITE_WIDTH;
+	computerPaddle->dx = COMPUTER_SPEED; computerPaddle->dy = COMPUTER_SPEED;
 }
 
 void init(void){
 
 	player = new Player();
 	playerPaddle = new Paddle();
-	
+	computerPaddle = new Paddle();	
 	balls.push_back(Ball());
 	
 	if( !al_init() ){
@@ -117,7 +120,7 @@ void init(void){
 
 	sprite = al_load_bitmap("images/bwPaddle.bmp");
 	sprite2 = al_load_bitmap("images/bwPaddle.bmp");
-	lifesprite = al_create_bitmap(SPRITE_WIDTH/4,SPRITE_HEIGHT/4);
+	lifesprite = al_create_bitmap(4,20);
 	modsprite = al_create_bitmap(16,16);
 	ball = al_load_bitmap("images/whiteball2.bmp");
 	addspeed = al_load_bitmap("images/addspeed.bmp");
@@ -183,15 +186,13 @@ void game_loop(void){
 	al_start_timer(timer);
 	lostGame = false;
 	done = false;
+	
+	modifiers.empty();
 	reset_object_positions();
 
 	//player paddle settings
-	playerPaddle->y = SCREEN_H/2.0 - playerPaddle->height/2.0;
-	playerPaddle->x = 0;
 
-	playerPaddle->dx = -4.0; playerPaddle->dy = 4.0;
-
-
+	
 	al_convert_mask_to_alpha(sprite,al_map_rgb(75,0,255));
 	al_convert_mask_to_alpha(sprite2,al_map_rgb(75,0,255));
 	al_convert_mask_to_alpha(ball,al_map_rgb(75,0,255));
@@ -207,11 +208,11 @@ void game_loop(void){
 
 
 		if(event.type == ALLEGRO_EVENT_TIMER){
-			if(key[KEY_UP] && sprite_y > 0){
-				sprite_y = sprite_y - speed;
+			if(key[KEY_UP] && playerPaddle->y > 0){
+				playerPaddle->y = playerPaddle->y - playerPaddle->speed;
 			}
-			if(key[KEY_DOWN] && sprite_y < SCREEN_H - SPRITE_HEIGHT){
-				sprite_y = sprite_y + speed;
+			if(key[KEY_DOWN] && playerPaddle->y < SCREEN_H - playerPaddle->height){
+				playerPaddle->y = playerPaddle->y + playerPaddle->speed;
 			}
 
 			for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
@@ -219,15 +220,15 @@ void game_loop(void){
 			}		
 
 
-			if( sprite2_y+sprite2_dy > 0 && sprite2_y+SPRITE_HEIGHT+sprite2_dy < SCREEN_H){
-				sprite2_y += sprite2_dy;
+			if( computerPaddle->y+computerPaddle->dy > 0 && computerPaddle->y+SPRITE_HEIGHT+computerPaddle->dy < SCREEN_H){
+				computerPaddle->y += computerPaddle->dy;
 			}
 
 
 			for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
 
-				if( sprite2_y+(SPRITE_HEIGHT/2) < it->y+(it->height/2)) { sprite2_dy = abs(sprite2_dy); }
-				if( sprite2_y+(SPRITE_HEIGHT/2) > it->y+(it->height/2)) { sprite2_dy = -1*abs(sprite2_dy); }
+				if( computerPaddle->y+(SPRITE_HEIGHT/2) < it->y+(it->height/2)) { computerPaddle->dy = abs(computerPaddle->dy); }
+				if( computerPaddle->y+(SPRITE_HEIGHT/2) > it->y+(it->height/2)) { computerPaddle->dy = -1*abs(computerPaddle->dy); }
 
 			}		
 			if( (balls.size() * balls.size() * 10) < player->points){
@@ -290,7 +291,7 @@ void game_loop(void){
 		//player paddle collision
 		for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
 
-			if(bounding_box_collision(sprite_x,sprite_y,SPRITE_WIDTH,SPRITE_HEIGHT,
+			if(bounding_box_collision(playerPaddle->x,playerPaddle->y,playerPaddle->width,playerPaddle->height,
 						it->x, it->y, it->width, it->height))
 			{
 				it->dx = abs(it->dx);
@@ -305,12 +306,12 @@ void game_loop(void){
 
 		for(int i = 0; i < modifiers.size(); i++){
 		
-			if(bounding_box_collision(sprite_x, sprite_y, SPRITE_WIDTH,SPRITE_HEIGHT,
+			if(bounding_box_collision(playerPaddle->x, playerPaddle->y, playerPaddle->width,playerPaddle->height,
 						modifiers[i]->x, modifiers[i]->y, modifiers[i]->width, modifiers[i]->height))
 			{
 				modifiers[i]->OnCollision();	
 				if( modifiers[i]->GetType() == ADDLIFE ) {  player->numLives+=1; }
-				if( modifiers[i]->GetType() == ADDSPEED && speed < 12) { speed+=1; }
+				if( modifiers[i]->GetType() == ADDSPEED && playerPaddle->speed < 12) { playerPaddle->speed+=1; }
 				delete modifiers[i];
 				modifiers.erase( modifiers.begin() + i);
 			
@@ -330,7 +331,7 @@ void game_loop(void){
 		//computer paddle collision
 		for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
 
-			if(bounding_box_collision(sprite2_x,sprite2_y,SPRITE_WIDTH,SPRITE_HEIGHT,
+			if(bounding_box_collision(computerPaddle->x,computerPaddle->y,SPRITE_WIDTH,SPRITE_HEIGHT,
 						it->x, it->y, it->width, it->height))
 			{
 				it->dx = -1*abs(it->dx);
@@ -344,8 +345,8 @@ void game_loop(void){
 		if(redraw && al_is_event_queue_empty(event_queue)){
 			redraw = false;
 			al_clear_to_color(al_map_rgb(BACKGROUNDCOLOR));
-			al_draw_bitmap(sprite,sprite_x,sprite_y,0);
-			al_draw_bitmap(sprite2,sprite2_x,sprite2_y,0);
+			al_draw_bitmap(sprite,playerPaddle->x,playerPaddle->y,0);
+			al_draw_bitmap(sprite2,computerPaddle->x,computerPaddle->y,0);
 			
 
 			for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){	
