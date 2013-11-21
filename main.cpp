@@ -47,11 +47,11 @@ ALLEGRO_DISPLAY *display;
 ALLEGRO_BITMAP *sprite = NULL, *sprite2 = NULL, *ball = NULL;
 ALLEGRO_BITMAP *lifesprite;
 ALLEGRO_BITMAP *modsprite;
-ALLEGRO_BITMAP *thesprite;
 
 //powerup sprites
 ALLEGRO_BITMAP *addspeed;
 ALLEGRO_BITMAP *addlife;
+ALLEGRO_BITMAP *thesprite;
 
 //fonts
 ALLEGRO_FONT *size20font;
@@ -121,7 +121,7 @@ void init(void){
 	ball = al_load_bitmap("images/whiteball2.bmp");
 	addspeed = al_load_bitmap("images/addspeed.bmp");
 	addlife = al_load_bitmap("images/addlife.bmp");
-	thesprite = al_load_bitmap("powerup.bmp");	
+	thesprite = al_load_bitmap("images/addlife.bmp");	
 
 	if(!sprite || !sprite2 || !lifesprite){
 		al_destroy_display(display);
@@ -193,6 +193,7 @@ void game_loop(void){
 	al_convert_mask_to_alpha(addspeed,al_map_rgb(75,0,255));
 	al_convert_mask_to_alpha(addlife,al_map_rgb(75,0,255));
 
+	al_convert_mask_to_alpha(thesprite,al_map_rgb(75,0,255));
 
 	while( !done ){
 
@@ -342,9 +343,17 @@ void game_loop(void){
 			}
 	
 			for(int j = 0; j < modifiers.size(); j++){
-				if( modifiers[j]->type == 1) { thesprite = addlife;}	
-				if( modifiers[j]->type == 2) { thesprite = addspeed; }	
-				al_draw_bitmap(thesprite,modifiers[j]->x,modifiers[j]->y,0);
+				if( modifiers[j]->GetType() == 1) 
+					{
+				//	fprintf(stderr,"type 1\n");
+					al_draw_bitmap(addlife,modifiers[j]->x,modifiers[j]->y,0);
+					
+					}	
+				if( modifiers[j]->GetType() == 2) 
+					{
+				//	fprintf(stderr,"type 2\n");
+					al_draw_bitmap(addspeed,modifiers[j]->x,modifiers[j]->y,0);
+					}	
 			}
 			
 
