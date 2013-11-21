@@ -71,7 +71,7 @@ void reset_object_positions(){
 	playerPaddle->x = 0; playerPaddle->y = SCREEN_H/2.0-playerPaddle->height/2.0;
 	playerPaddle->dx = -4.0; playerPaddle->dy = 4.0;
 	playerPaddle->speed = 7;
-	
+
 	//computer
 	computerPaddle->y = SCREEN_H/2.0 - computerPaddle->height/2.0;
 	computerPaddle->x = SCREEN_W - computerPaddle->width;
@@ -89,7 +89,7 @@ void init(void){
 	playerPaddle = new Paddle();
 	computerPaddle = new Paddle();	
 	balls.push_back(Ball());
-	
+
 	if( !al_init() ){
 		abort_game("Failed to initalize Allegro");
 	}
@@ -139,20 +139,20 @@ void init(void){
 	al_clear_to_color(al_map_rgb(0,0,0));
 	al_set_target_bitmap(modsprite);
 	al_clear_to_color(al_map_rgb(255,255,255));
-	
-	
+
+
 	al_set_target_bitmap(al_get_backbuffer(display));
 
 	event_queue = al_create_event_queue();
 	if( !event_queue ){
 		abort_game("Failed to create event queue");
 	}
-	
+
 	al_register_event_source(event_queue, al_get_keyboard_event_source());
 	al_register_event_source(event_queue, al_get_timer_event_source(timer));
 	al_register_event_source(event_queue, al_get_display_event_source(display));
 	al_init_font_addon();	
-	
+
 	al_init_ttf_addon();
 	size20font = al_load_ttf_font("fonts/trebuc.ttf",20,0);
 	size40font = al_load_ttf_font("fonts/trebuc.ttf",40,0);
@@ -177,12 +177,12 @@ void shutdown(void){
 }
 
 void game_loop(void){
-	
+
 	bool redraw = true;
 	al_start_timer(timer);
 	lostGame = false;
 	done = false;
-	
+
 	modifiers.empty();
 	reset_object_positions();
 
@@ -226,12 +226,12 @@ void game_loop(void){
 			if( (balls.size() * balls.size() * 10) < player->points){
 				player->numLives++; balls.push_back(Ball());
 			}
-			
+
 			if( (rand() % 200 == 100) ) { 
 
 				modifiers.push_back(new Powerup);	
 			}
-				
+
 			redraw = true;
 		}
 
@@ -297,7 +297,7 @@ void game_loop(void){
 		//player paddle-modifier collision
 
 		for(int i = 0; i < modifiers.size(); i++){
-		
+
 			if(bounding_box_collision(playerPaddle->x, playerPaddle->y, playerPaddle->width,playerPaddle->height,
 						modifiers[i]->x, modifiers[i]->y, modifiers[i]->width, modifiers[i]->height))
 			{
@@ -306,7 +306,7 @@ void game_loop(void){
 				if( modifiers[i]->GetType() == ADDSPEED && playerPaddle->speed < 12) { playerPaddle->speed+=1; }
 				delete modifiers[i];
 				modifiers.erase( modifiers.begin() + i);
-			
+
 			}
 			if( modifiers[i]->ticksToLive == 0 )
 			{
@@ -315,11 +315,11 @@ void game_loop(void){
 			}
 			if( modifiers[i]->ticksToLive > 0)
 			{
-			modifiers[i]->ticksToLive--;
+				modifiers[i]->ticksToLive--;
 			}
-		
+
 		}
-	
+
 		//computer paddle collision
 		for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
 
@@ -339,26 +339,26 @@ void game_loop(void){
 			al_clear_to_color(al_map_rgb(BACKGROUNDCOLOR));
 			al_draw_bitmap(sprite,playerPaddle->x,playerPaddle->y,0);
 			al_draw_bitmap(sprite2,computerPaddle->x,computerPaddle->y,0);
-			
+
 
 			for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){	
 				al_draw_bitmap(ball,it->x,it->y,0);
 			}
-	
+
 			for(int j = 0; j < modifiers.size(); j++){
 				if( modifiers[j]->GetType() == 1) 
-					{
-				//	fprintf(stderr,"type 1\n");
+				{
+					//	fprintf(stderr,"type 1\n");
 					al_draw_bitmap(addlife,modifiers[j]->x,modifiers[j]->y,0);
-					
-					}	
+
+				}	
 				if( modifiers[j]->GetType() == 2) 
-					{
-				//	fprintf(stderr,"type 2\n");
+				{
+					//	fprintf(stderr,"type 2\n");
 					al_draw_bitmap(addspeed,modifiers[j]->x,modifiers[j]->y,0);
-					}	
+				}	
 			}
-			
+
 
 			al_draw_bitmap(lifesprite,20,20,0);
 			al_draw_textf(digitalfont, al_map_rgb(255,255,255), SCREEN_W/2,20,ALLEGRO_ALIGN_CENTRE, "%03d",player->points);
