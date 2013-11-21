@@ -61,7 +61,8 @@ void Powerup::InitType()
 }
 
 int Powerup::GetType()
-{
+{	/*
 	if (type == 1) return ADDLIFE;
 	if (type == 2) return ADDSPEED;
+	*/ return type;
 }
