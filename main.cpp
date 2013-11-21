@@ -28,10 +28,6 @@
 #define BACKGROUNDCOLOR 0,51,51
 #define FONTCOLOR 255,255,255
 
-const int SPRITE_HEIGHT = 80; //default 80
-const int SPRITE_WIDTH = 16;  //default 16
-int speed = 7;  //7 by default
-int COMPUTER_SPEED = 5;
 bool done, lostGame;
 enum MYKEYS {
 	KEY_UP, KEY_DOWN
@@ -83,8 +79,8 @@ void reset_object_positions(){
 	computerPaddle->dy = 5;
 	computerPaddle->speed = 5; 
 
-	computerPaddle->y = SCREEN_H/2.0 - SPRITE_HEIGHT/2.0; computerPaddle->x = SCREEN_W - SPRITE_WIDTH;
-	computerPaddle->dx = COMPUTER_SPEED; computerPaddle->dy = COMPUTER_SPEED;
+	computerPaddle->y = SCREEN_H/2.0 - computerPaddle->height/2.0; computerPaddle->x = SCREEN_W - computerPaddle->width;
+	computerPaddle->dx = 5; computerPaddle->dy = 5;
 }
 
 void init(void){
@@ -181,7 +177,7 @@ void shutdown(void){
 }
 
 void game_loop(void){
-
+	
 	bool redraw = true;
 	al_start_timer(timer);
 	lostGame = false;
@@ -190,9 +186,6 @@ void game_loop(void){
 	modifiers.empty();
 	reset_object_positions();
 
-	//player paddle settings
-
-	
 	al_convert_mask_to_alpha(sprite,al_map_rgb(75,0,255));
 	al_convert_mask_to_alpha(sprite2,al_map_rgb(75,0,255));
 	al_convert_mask_to_alpha(ball,al_map_rgb(75,0,255));
@@ -205,7 +198,6 @@ void game_loop(void){
 
 		ALLEGRO_EVENT event;
 		al_wait_for_event(event_queue, &event);
-
 
 		if(event.type == ALLEGRO_EVENT_TIMER){
 			if(key[KEY_UP] && playerPaddle->y > 0){
@@ -220,15 +212,15 @@ void game_loop(void){
 			}		
 
 
-			if( computerPaddle->y+computerPaddle->dy > 0 && computerPaddle->y+SPRITE_HEIGHT+computerPaddle->dy < SCREEN_H){
+			if( computerPaddle->y+computerPaddle->dy > 0 && computerPaddle->y+computerPaddle->height+computerPaddle->dy < SCREEN_H){
 				computerPaddle->y += computerPaddle->dy;
 			}
 
 
 			for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
 
-				if( computerPaddle->y+(SPRITE_HEIGHT/2) < it->y+(it->height/2)) { computerPaddle->dy = abs(computerPaddle->dy); }
-				if( computerPaddle->y+(SPRITE_HEIGHT/2) > it->y+(it->height/2)) { computerPaddle->dy = -1*abs(computerPaddle->dy); }
+				if( computerPaddle->y+(computerPaddle->height/2) < it->y+(it->height/2)) { computerPaddle->dy = abs(computerPaddle->dy); }
+				if( computerPaddle->y+(computerPaddle->height/2) > it->y+(it->height/2)) { computerPaddle->dy = -1*abs(computerPaddle->dy); }
 
 			}		
 			if( (balls.size() * balls.size() * 10) < player->points){
@@ -331,7 +323,7 @@ void game_loop(void){
 		//computer paddle collision
 		for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
 
-			if(bounding_box_collision(computerPaddle->x,computerPaddle->y,SPRITE_WIDTH,SPRITE_HEIGHT,
+			if(bounding_box_collision(computerPaddle->x,computerPaddle->y,computerPaddle->width,computerPaddle->height,
 						it->x, it->y, it->width, it->height))
 			{
 				it->dx = -1*abs(it->dx);
