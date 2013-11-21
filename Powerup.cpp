@@ -28,7 +28,7 @@ Powerup::Powerup(){
 	InitType();
 	ticksToLive = 100;
 
-	x = 100;
+	x = 20;
 }
 
 Powerup::~Powerup(){

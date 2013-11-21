@@ -113,6 +113,7 @@ void init(void){
 	if( !display ){
 		abort_game("Failed to create display");
 	}
+	al_set_window_title(display, "AllegroPong");
 
 	sprite = al_load_bitmap("images/bwPaddle.bmp");
 	sprite2 = al_load_bitmap("images/bwPaddle.bmp");
@@ -186,6 +187,10 @@ void game_loop(void){
 
 	//player paddle settings
 	playerPaddle->y = SCREEN_H/2.0 - playerPaddle->height/2.0;
+	playerPaddle->x = 0;
+
+	playerPaddle->dx = -4.0; playerPaddle->dy = 4.0;
+
 
 	al_convert_mask_to_alpha(sprite,al_map_rgb(75,0,255));
 	al_convert_mask_to_alpha(sprite2,al_map_rgb(75,0,255));
