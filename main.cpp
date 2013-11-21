@@ -310,9 +310,14 @@ void game_loop(void){
 				modifiers.erase( modifiers.begin() + i);
 			
 			}
-			else
+			if( modifiers[i]->ticksToLive == 0 )
 			{
-			//////
+				delete modifiers[i];
+				modifiers.erase( modifiers.begin() + i);
+			}
+			if( modifiers[i]->ticksToLive > 0)
+			{
+			modifiers[i]->ticksToLive--;
 			}
 		
 		}

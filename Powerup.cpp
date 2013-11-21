@@ -26,7 +26,9 @@ class Powerup: public Modifier{
 Powerup::Powerup(){
 
 	InitType();
+	ticksToLive = 100;
 
+	x = 100;
 }
 
 Powerup::~Powerup(){

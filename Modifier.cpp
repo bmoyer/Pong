@@ -10,7 +10,7 @@ class Modifier{
 public:
 	int width, height;
 	int type;
-	int ticksToLive;	
+	int ticksToLive; //-1 for infinite life 	
 	float x, y;
 	float dx, dy;
 	float speed;
@@ -24,6 +24,8 @@ public:
 Modifier::Modifier(){
 x = 5;
 y = rand() % 480+20;
+
+ticksToLive = -1;
 }
 
 Modifier::~Modifier(){
