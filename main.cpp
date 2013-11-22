@@ -201,7 +201,7 @@ void game_loop(void){
 				it->Move();
 			}
 			for(std::vector<Bullet>::iterator it = bullets.begin(); it!= bullets.end();){
-				if ( it->x > 200 ) { it = bullets.erase(it); }
+				if ( it->x > 640 ) { fprintf(stderr,"bullet erased.\n");it = bullets.erase(it); }
 				else { it->Move(); ++it; }	
 			}		
 

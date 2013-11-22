@@ -28,8 +28,7 @@ Powerup::Powerup(){
 	InitType();
 	ticksToLive = 100;
 
-	x = rand() % 600+20; 
-	y = rand() % 440+20;
+	x = 100;
 }
 
 Powerup::~Powerup(){

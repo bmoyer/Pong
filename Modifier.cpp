@@ -22,7 +22,7 @@ public:
 };
 
 Modifier::Modifier(){
-x = 5;
+x = rand() % 600 +20; 
 y = rand() % 480+20;
 
 ticksToLive = -1;
