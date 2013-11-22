@@ -42,7 +42,7 @@ ALLEGRO_DISPLAY *display;
 //general sprites
 ALLEGRO_BITMAP *sprite = NULL, *sprite2 = NULL, *ball = NULL;
 ALLEGRO_BITMAP *lifesprite;
-ALLEGRO_BITMAP *modsprite;
+ALLEGRO_BITMAP *bullet;
 
 //powerup sprites
 ALLEGRO_BITMAP *addspeed;
@@ -60,6 +60,7 @@ Paddle *playerPaddle;
 Paddle *computerPaddle;
 std::vector<Ball> balls;
 std::vector<Modifier *> modifiers;
+std::vector<Bullet> bullets;
 
 void abort_game(const char *message){
 	printf("%s\n", message);
@@ -112,33 +113,24 @@ void init(void){
 	if( !display ){
 		abort_game("Failed to create display");
 	}
+	
 	al_set_window_title(display, "AllegroPong");
-
 	sprite = al_load_bitmap("images/bwPaddle.bmp");
 	sprite2 = al_load_bitmap("images/bwPaddle.bmp");
-	lifesprite = al_create_bitmap(4,20);
-	modsprite = al_create_bitmap(16,16);
 	ball = al_load_bitmap("images/whiteball2.bmp");
 	addspeed = al_load_bitmap("images/addspeed.bmp");
 	addlife = al_load_bitmap("images/addlife.bmp");
+	bullet = al_load_bitmap("images/bullet.bmp");
+	lifesprite = al_create_bitmap(4,20);
 
-	if(!sprite || !sprite2 || !lifesprite){
+	if(!sprite || !sprite2 || !lifesprite || !ball  || !addspeed || !addlife){
 		al_destroy_display(display);
 		al_destroy_timer(timer);
 		abort_game("Failed to create sprite");
 	}
 
-	if(!ball){
-		al_destroy_display(display);
-		al_destroy_timer(timer);
-		abort_game("Failed to create ball");
-	}
-
 	al_set_target_bitmap(lifesprite);
 	al_clear_to_color(al_map_rgb(0,0,0));
-	al_set_target_bitmap(modsprite);
-	al_clear_to_color(al_map_rgb(255,255,255));
-
 
 	al_set_target_bitmap(al_get_backbuffer(display));
 
@@ -190,6 +182,7 @@ void game_loop(void){
 	al_convert_mask_to_alpha(ball,al_map_rgb(75,0,255));
 	al_convert_mask_to_alpha(addspeed,al_map_rgb(75,0,255));
 	al_convert_mask_to_alpha(addlife,al_map_rgb(75,0,255));
+	al_convert_mask_to_alpha(bullet,al_map_rgb(75,0,255));
 
 	while( !done ){
 
@@ -206,8 +199,11 @@ void game_loop(void){
 
 			for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
 				it->Move();
+			}
+			for(std::vector<Bullet>::iterator it = bullets.begin(); it!= bullets.end();){
+				if ( it->x > 200 ) { it = bullets.erase(it); }
+				else { it->Move(); ++it; }	
 			}		
-
 
 			if( computerPaddle->y+computerPaddle->dy > 0 && computerPaddle->y+computerPaddle->height+computerPaddle->dy < SCREEN_H){
 				computerPaddle->y += computerPaddle->dy;
@@ -244,6 +240,9 @@ void game_loop(void){
 				case ALLEGRO_KEY_DOWN:
 					key[KEY_DOWN] = true;
 					break;
+				case ALLEGRO_KEY_SPACE:
+					bullets.push_back(Bullet(playerPaddle->y+playerPaddle->height/2));
+					break;	
 			}
 
 		}
@@ -288,16 +287,17 @@ void game_loop(void){
 				it->speed = it-> speed+ 1.0;
 			}
 
-
 		}
 
-		//player paddle-modifier collision
-
+		//bullet-modifier collision
 		for(int i = 0; i < modifiers.size(); i++){
-
-			if(bounding_box_collision(playerPaddle->x, playerPaddle->y, playerPaddle->width,playerPaddle->height,
+			for(int j = 0; j < bullets.size(); j++){
+		
+			if(bounding_box_collision(bullets[j].x, bullets[j].y, bullets[j].width,bullets[j].height,
 						modifiers[i]->x, modifiers[i]->y, modifiers[i]->width, modifiers[i]->height))
 			{
+		
+				bullets.erase(bullets.begin()+j);
 				modifiers[i]->OnCollision();	
 				if( modifiers[i]->GetType() == ADDLIFE ) {  player->numLives+=1; }
 				if( modifiers[i]->GetType() == ADDSPEED && playerPaddle->speed < 12) { playerPaddle->speed+=1; }
@@ -305,6 +305,12 @@ void game_loop(void){
 				modifiers.erase( modifiers.begin() + i);
 
 			}
+		}
+
+		}
+		
+		
+		for(int i = 0; i < modifiers.size(); i++){
 			if( modifiers[i]->ticksToLive == 0 )
 			{
 				delete modifiers[i];
@@ -315,7 +321,7 @@ void game_loop(void){
 				modifiers[i]->ticksToLive--;
 			}
 
-		}
+		}	
 
 		//computer paddle collision
 		for(std::vector<Ball>::iterator it = balls.begin(); it != balls.end(); ++it){
@@ -356,6 +362,10 @@ void game_loop(void){
 				}	
 			}
 
+			for(std::vector<Bullet>::iterator it = bullets.begin(); it != bullets.end(); ++it){
+				al_draw_bitmap(bullet,it->x,it->y,0);
+			}
+
 
 			al_draw_bitmap(lifesprite,20,20,0);
 			al_draw_textf(digitalfont, al_map_rgb(255,255,255), SCREEN_W/2,20,ALLEGRO_ALIGN_CENTRE, "%03d",player->points);
@@ -373,8 +383,6 @@ void splash_loop(void){
 	bool redraw = true;
 	al_start_timer(timer);
 	bool splash_done;	
-
-
 	int testAngle;
 
 	while( !splash_done){

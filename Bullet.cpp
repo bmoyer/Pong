@@ -11,14 +11,19 @@ public:
 	float x, y;
 	float dx, dy;
 	float speed;
-	Bullet();
+	Bullet(int playerY);
 	~Bullet();
 
 	void Move();
 };
 
-Bullet::Bullet(){
+Bullet::Bullet(int playerY){  //need to set bullet y to the player paddle's y
+speed = 5;
+dx = 1;
+y = playerY;
 
+height = 13;
+width = 16;
 }
 
 Bullet::~Bullet(){
@@ -26,7 +31,5 @@ Bullet::~Bullet(){
 }
 
 void Bullet::Move(){
-
 x += dx*speed;
-
 }
