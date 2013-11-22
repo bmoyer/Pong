@@ -13,6 +13,7 @@
 
 #include "collision.cpp"
 #include "Ball.cpp"
+#include "Bullet.cpp"
 #include "Modifier.cpp"
 #include "Powerup.cpp"
 #include "Paddle.cpp"
@@ -46,7 +47,6 @@ ALLEGRO_BITMAP *modsprite;
 //powerup sprites
 ALLEGRO_BITMAP *addspeed;
 ALLEGRO_BITMAP *addlife;
-ALLEGRO_BITMAP *thesprite;
 
 //fonts
 ALLEGRO_FONT *size20font;
@@ -121,7 +121,6 @@ void init(void){
 	ball = al_load_bitmap("images/whiteball2.bmp");
 	addspeed = al_load_bitmap("images/addspeed.bmp");
 	addlife = al_load_bitmap("images/addlife.bmp");
-	thesprite = al_load_bitmap("images/addlife.bmp");	
 
 	if(!sprite || !sprite2 || !lifesprite){
 		al_destroy_display(display);
@@ -191,8 +190,6 @@ void game_loop(void){
 	al_convert_mask_to_alpha(ball,al_map_rgb(75,0,255));
 	al_convert_mask_to_alpha(addspeed,al_map_rgb(75,0,255));
 	al_convert_mask_to_alpha(addlife,al_map_rgb(75,0,255));
-
-	al_convert_mask_to_alpha(thesprite,al_map_rgb(75,0,255));
 
 	while( !done ){
 
