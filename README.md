@@ -5,3 +5,5 @@ This is the directory for a Pong game created using the Allegro library.  This p
 
 To compile the project, place all files in a directory and type:	make
 To run the project, place the executable in a directory and type:	./main
+
+![Pong game](http://github.com/bmoyer/Pong/blob/master/images/game.png)
